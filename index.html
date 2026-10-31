@@ -113,13 +113,15 @@
       <section id="tab-dashboard" class="space-y-4">
         
         <!-- CARD PRINCIPAL: O QUE AINDA PODEMOS GASTAR (ALERTA NO AZUL OU NO VERMELHO) -->
-        <div id="heroCardContainer" class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-4 shadow-lg border border-slate-800 transition-colors duration-300">
+        <div id="heroCardContainer" onclick="switchTab('transactions')" class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-4 shadow-lg border border-slate-800 transition-all duration-300 cursor-pointer active:scale-[0.98]">
           <div class="flex items-center justify-between mb-2">
             <span id="heroStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold backdrop-blur-md">
               <i data-lucide="sparkles" class="w-3 h-3 text-emerald-300"></i>
               <span>NO AZUL! SALDO LIVRE</span>
             </span>
-            <span id="budgetProgressPercent" class="text-xs font-bold text-slate-300">0% comprometido</span>
+            <span class="text-[10px] text-slate-300 font-medium flex items-center gap-0.5">
+              Ver extrato <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            </span>
           </div>
 
           <div class="my-2">
@@ -147,61 +149,89 @@
           </div>
 
           <!-- Barra de progresso -->
-          <div class="mt-3 w-full bg-slate-700/60 rounded-full h-1.5 overflow-hidden">
+          <div class="mt-3 flex items-center justify-between text-[10px] text-slate-400 mb-1">
+            <span>Comprometimento</span>
+            <span id="budgetProgressPercent" class="font-bold text-slate-200">0%</span>
+          </div>
+          <div class="w-full bg-slate-700/60 rounded-full h-1.5 overflow-hidden">
             <div id="budgetProgressBar" class="bg-gradient-to-r from-emerald-400 to-teal-300 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
           </div>
         </div>
 
-        <!-- 4 CARDS DE MÉTRICAS EM GRADE 2x2 COMPACTA -->
+        <!-- 4 CARDS DE MÉTRICAS EM GRADE 2x2 (BOTÕES QUE LEVAM DIRETO AOS CUSTOS) -->
         <div class="grid grid-cols-2 gap-2.5">
           
-          <!-- Entradas / Salário -->
-          <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <!-- Botão 1: Entradas / Salário -> Vai para Extrato filtrado por Entradas -->
+          <button type="button" onclick="filterTransactionsAndGo('income')" class="text-left bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between active:scale-95 active:bg-emerald-50/50 hover:border-emerald-300 transition duration-150 group">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Entradas</span>
-              <div class="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i>
+              <span class="text-[10px] font-bold text-slate-400 group-hover:text-emerald-700 uppercase tracking-wider">Entradas</span>
+              <div class="flex items-center gap-1">
+                <div class="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i>
+                </div>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-emerald-600 transition"></i>
               </div>
             </div>
             <div id="statIncome" class="text-base font-extrabold text-slate-900 truncate">R$ 0,00</div>
-            <span class="text-[10px] text-slate-400 truncate">Salário do casal</span>
-          </div>
+            <div class="flex items-center justify-between text-[10px] text-slate-400 mt-0.5">
+              <span class="truncate">Salário do casal</span>
+              <span class="text-emerald-600 font-bold shrink-0">Ver &rarr;</span>
+            </div>
+          </button>
 
-          <!-- Faturas Cartões -->
-          <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <!-- Botão 2: Faturas Cartões -> Vai direto para a aba Nossos Cartões -->
+          <button type="button" onclick="switchTab('cards')" class="text-left bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between active:scale-95 active:bg-purple-50/50 hover:border-purple-300 transition duration-150 group">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[10px] font-bold text-purple-600 uppercase tracking-wider">Cartões</span>
-              <div class="w-6 h-6 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+              <div class="flex items-center gap-1">
+                <div class="w-6 h-6 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+                </div>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-purple-600 transition"></i>
               </div>
             </div>
             <div id="statCreditCards" class="text-base font-extrabold text-purple-700 truncate">R$ 0,00</div>
-            <span id="statCreditCardsSub" class="text-[10px] text-slate-400 truncate">Faturas do mês</span>
-          </div>
+            <div class="flex items-center justify-between text-[10px] text-slate-400 mt-0.5">
+              <span id="statCreditCardsSub" class="truncate">Faturas do mês</span>
+              <span class="text-purple-600 font-bold shrink-0">Pagar &rarr;</span>
+            </div>
+          </button>
 
-          <!-- Pix & Dinheiro -->
-          <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <!-- Botão 3: Pix & Dinheiro -> Vai para Extrato filtrado por Pix & Dinheiro -->
+          <button type="button" onclick="filterTransactionsAndGo('pix_cash')" class="text-left bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between active:scale-95 active:bg-blue-50/50 hover:border-blue-300 transition duration-150 group">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Pix / Dinheiro</span>
-              <div class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+              <div class="flex items-center gap-1">
+                <div class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                </div>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-600 transition"></i>
               </div>
             </div>
             <div id="statPixDebit" class="text-base font-extrabold text-blue-700 truncate">R$ 0,00</div>
-            <span class="text-[10px] text-slate-400 truncate">Já saiu da conta</span>
-          </div>
+            <div class="flex items-center justify-between text-[10px] text-slate-400 mt-0.5">
+              <span class="truncate">Já saiu da conta</span>
+              <span class="text-blue-600 font-bold shrink-0">Ver &rarr;</span>
+            </div>
+          </button>
 
-          <!-- Contas a Pagar (Pendentes) -->
-          <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <!-- Botão 4: A Pagar -> Vai direto para a aba Contas & Empréstimos -->
+          <button type="button" onclick="switchTab('bills')" class="text-left bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between active:scale-95 active:bg-amber-50/50 hover:border-amber-300 transition duration-150 group">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[10px] font-bold text-amber-600 uppercase tracking-wider">A Pagar</span>
-              <div class="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+              <div class="flex items-center gap-1">
+                <div class="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+                </div>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-amber-600 transition"></i>
               </div>
             </div>
             <div id="statBillsPending" class="text-base font-extrabold text-amber-600 truncate">R$ 0,00</div>
-            <span id="statBillsPendingSub" class="text-[10px] text-slate-400 truncate">Boletos e faturas</span>
-          </div>
+            <div class="flex items-center justify-between text-[10px] text-slate-400 mt-0.5">
+              <span id="statBillsPendingSub" class="truncate">Boletos e faturas</span>
+              <span class="text-amber-600 font-bold shrink-0">Pagar &rarr;</span>
+            </div>
+          </button>
 
         </div>
 
@@ -293,9 +323,11 @@
 
             <select id="txFilterMethod" class="py-2 px-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700">
               <option value="all">Forma: Todas</option>
-              <option value="pix">⚡ Pix</option>
-              <option value="card">💳 Cartão Crédito</option>
-              <option value="debit">💵 Dinheiro / Débito</option>
+              <option value="income">💰 Apenas Entradas / Salário</option>
+              <option value="pix_cash">⚡ Pix & Dinheiro</option>
+              <option value="pix">⚡ Somente Pix</option>
+              <option value="card">💳 Somente Cartão</option>
+              <option value="debit">💵 Somente Dinheiro</option>
             </select>
           </div>
         </div>
@@ -1241,6 +1273,19 @@
       }
     }
 
+    function filterTransactionsAndGo(filterValue) {
+      switchTab('transactions');
+      const methodSelect = document.getElementById('txFilterMethod');
+      if (methodSelect) {
+        methodSelect.value = filterValue;
+      }
+      const searchInput = document.getElementById('txSearchInput');
+      if (searchInput) {
+        searchInput.value = '';
+      }
+      renderTransactionsList();
+    }
+
     function getFilteredTransactions() {
       const targetMonthStr = `${appState.selectedYear}-${String(appState.selectedMonth + 1).padStart(2, '0')}`;
       const search = (document.getElementById('txSearchInput')?.value || '').toLowerCase().trim();
@@ -1253,9 +1298,17 @@
           if (search && !tx.description.toLowerCase().includes(search) && !(tx.category || '').toLowerCase().includes(search)) return false;
           if (personFilter !== 'all' && tx.person !== personFilter) return false;
           if (methodFilter !== 'all') {
-            if (methodFilter === 'pix' && tx.method !== 'pix') return false;
-            if (methodFilter === 'card' && tx.method !== 'card') return false;
-            if (methodFilter === 'debit' && tx.method !== 'debit') return false;
+            if (methodFilter === 'income') {
+              if (tx.type !== 'income') return false;
+            } else if (methodFilter === 'pix_cash') {
+              if (tx.type !== 'expense' || (tx.method !== 'pix' && tx.method !== 'debit')) return false;
+            } else if (methodFilter === 'pix') {
+              if (tx.type !== 'expense' || tx.method !== 'pix') return false;
+            } else if (methodFilter === 'card') {
+              if (tx.type !== 'expense' || tx.method !== 'card') return false;
+            } else if (methodFilter === 'debit') {
+              if (tx.type !== 'expense' || tx.method !== 'debit') return false;
+            }
           }
           return true;
         })
