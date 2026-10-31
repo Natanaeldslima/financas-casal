@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full bg-slate-100">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Finanças do Casal | Nosso Dinheiro</title>
-  <meta name="description" content="Controle financeiro simples e inteligente para casais. Saiba quanto gastou no cartão, no pix e quanto ainda podem gastar no mês.">
-  <meta name="theme-color" content="#10b981">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Nosso Dinheiro | Finanças do Casal</title>
+  <meta name="description" content="Controle financeiro simples no celular para casal.">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%22><text y=%2222%22 font-size=%2220%22>💑</text></svg>">
   
   <!-- Tailwind CSS CDN -->
@@ -17,896 +19,718 @@
   <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#ecfdf5',
-              100: '#d1fae5',
-              500: '#10b981',
-              600: '#059669',
-              700: '#047857',
-              800: '#065f46',
-              900: '#064e3b',
-            },
-            couple1: '#3b82f6', // Cor padrão do Marido
-            couple2: '#ec4899', // Cor padrão da Esposa
-          }
-        }
-      }
-    }
-  </script>
-
   <style>
-    /* Estilos personalizados para acabamento fino */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     
     * {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
     }
 
-    /* Scrollbar discreta */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+      position: relative;
     }
 
+    /* Modal Backdrop Blur */
     .modal-backdrop {
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
     }
-    
-    .glow-card {
-      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1), 0 8px 10px -6px rgba(16, 185, 129, 0.1);
+
+    /* Remove scrollbars visualmente no mobile */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex justify-center antialiased select-none">
 
-  <!-- ==================== TOPO / CABEÇALHO ==================== -->
-  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+  <!-- APLICATIVO MOBILE CONTAINER (Trava em 480px máx para parecer app em qualquer tela) -->
+  <div class="w-full max-w-md bg-slate-50 min-h-screen flex flex-col relative shadow-2xl overflow-x-hidden border-x border-slate-200/60 pb-24">
+
+    <!-- ==================== HEADER DO APP ==================== -->
+    <header class="sticky top-0 z-30 bg-slate-900 text-white pt-safe px-4 py-3 shadow-md border-b border-slate-800">
       
-      <!-- Logo e Título -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-          <i data-lucide="heart-handshake" class="w-6 h-6"></i>
+      <!-- Linha 1: Título do Casal e Ações -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shrink-0 shadow-sm">
+            <i data-lucide="heart-handshake" class="w-4 h-4"></i>
+          </div>
+          <div class="truncate">
+            <h1 class="text-sm font-extrabold leading-tight tracking-tight flex items-center gap-1.5 truncate">
+              <span>Nosso Dinheiro</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Casal</span>
+            </h1>
+            <p id="subHeaderNames" class="text-[11px] text-slate-400 truncate">Marido & Esposa</p>
+          </div>
         </div>
-        <div>
-          <h1 class="text-base sm:text-lg font-bold leading-tight flex items-center gap-1.5 text-slate-900">
-            <span>Nosso Dinheiro</span>
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">Casal</span>
-          </h1>
-          <p class="text-xs text-slate-500 hidden sm:block">Controle financeiro transparente para os dois</p>
+
+        <!-- Botões de Ação Topo -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <!-- Botão Sincronização / Nuvem -->
+          <button onclick="openSyncModal()" title="Status da Sincronização" 
+            class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 relative border border-slate-700/60 transition active:scale-95">
+            <i data-lucide="cloud" class="w-4 h-4"></i>
+            <span id="syncStatusDot" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400"></span>
+          </button>
+
+          <!-- Botão Configurações -->
+          <button onclick="openSettingsModal()" title="Configurações" 
+            class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition active:scale-95">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+          </button>
         </div>
       </div>
 
-      <!-- Controles Centrais / Seletor de Mês e Quem está usando -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Seletor do Mês -->
-        <div class="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
-          <button id="prevMonthBtn" title="Mês anterior" class="p-1.5 hover:bg-white rounded-lg text-slate-600 transition">
-            <i data-lucide="chevron-left" class="w-4 h-4"></i>
-          </button>
-          <span id="currentMonthDisplay" class="px-2 text-xs sm:text-sm font-bold text-slate-700 min-w-[110px] text-center capitalize">
-            Novembro 2026
-          </span>
-          <button id="nextMonthBtn" title="Próximo mês" class="p-1.5 hover:bg-white rounded-lg text-slate-600 transition">
-            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-          </button>
-        </div>
-
-        <!-- Botão de Sincronização / Status da Nuvem -->
-        <button id="syncStatusBtn" onclick="openSyncModal()" title="Status da sincronização" 
-          class="relative p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition">
-          <i data-lucide="cloud" class="w-5 h-5"></i>
-          <span id="syncStatusDot" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500"></span>
+      <!-- Linha 2: Seletor de Mês (Estilo Pill Compacto) -->
+      <div class="mt-2.5 flex items-center justify-between bg-slate-800/90 rounded-xl p-1 border border-slate-700/80 text-xs">
+        <button id="prevMonthBtn" class="p-1.5 hover:bg-slate-700 rounded-lg text-slate-300 active:scale-90 transition">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
-
-        <!-- Botão Configurações -->
-        <button onclick="openSettingsModal()" title="Configurações e Nomes" 
-          class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition">
-          <i data-lucide="settings" class="w-5 h-5"></i>
+        <span id="currentMonthDisplay" class="font-bold text-slate-200 capitalize tracking-wide px-2 text-center text-xs">
+          Outubro 2026
+        </span>
+        <button id="nextMonthBtn" class="p-1.5 hover:bg-slate-700 rounded-lg text-slate-300 active:scale-90 transition">
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </button>
       </div>
-    </div>
 
-    <!-- Barra de Navegação de Abas -->
-    <div class="max-w-6xl mx-auto px-4 flex gap-2 border-t border-slate-100 overflow-x-auto no-scrollbar">
-      <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn py-2.5 px-3 border-b-2 font-semibold text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap border-emerald-600 text-emerald-600">
-        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Visão Geral
-      </button>
-      <button onclick="switchTab('transactions')" id="tab-btn-transactions" class="tab-btn py-2.5 px-3 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap border-transparent text-slate-500 hover:text-slate-800">
-        <i data-lucide="receipt" class="w-4 h-4"></i> Gastos & Extrato
-      </button>
-      <button onclick="switchTab('cards')" id="tab-btn-cards" class="tab-btn py-2.5 px-3 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap border-transparent text-slate-500 hover:text-slate-800">
-        <i data-lucide="credit-card" class="w-4 h-4"></i> Nossos Cartões
-      </button>
-      <button onclick="switchTab('bills')" id="tab-btn-bills" class="tab-btn py-2.5 px-3 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap border-transparent text-slate-500 hover:text-slate-800">
-        <i data-lucide="calendar-clock" class="w-4 h-4"></i> Contas & Empréstimos
-      </button>
-    </div>
-  </header>
+    </header>
 
-  <!-- ==================== CONTEÚDO PRINCIPAL ==================== -->
-  <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 pb-28 md:pb-12">
+    <!-- ==================== CONTEÚDO PRINCIPAL (COM ABAS) ==================== -->
+    <main class="flex-1 p-3.5 space-y-4">
 
-    <!-- ==================== ABA 1: DASHBOARD / VISÃO GERAL ==================== -->
-    <section id="tab-dashboard" class="space-y-6">
+      <!-- ==================== ABA 1: INÍCIO (DASHBOARD) ==================== -->
+      <section id="tab-dashboard" class="space-y-4">
+        
+        <!-- CARD PRINCIPAL: O QUE AINDA PODEMOS GASTAR -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-4 shadow-lg border border-slate-800">
+          <div class="flex items-center justify-between mb-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-300 text-[11px] font-semibold backdrop-blur-md">
+              <i data-lucide="sparkles" class="w-3 h-3"></i>
+              <span>O que ainda podemos gastar</span>
+            </span>
+            <span id="budgetProgressPercent" class="text-xs font-bold text-slate-300">0% comprometido</span>
+          </div>
 
-      <!-- BANNER DE RESUMO DO CASAL: O QUE AINDA TEMOS E O QUE PODEMOS GASTAR -->
-      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-5 sm:p-8 shadow-xl">
-        <div class="absolute -right-8 -top-8 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute right-12 bottom-0 w-36 h-36 bg-teal-400/10 rounded-full blur-2xl pointer-events-none"></div>
-
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div class="space-y-2">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-emerald-300 text-xs font-semibold backdrop-blur-md">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-              <span>O que ainda podemos gastar no mês</span>
+          <div class="my-2">
+            <div class="flex items-baseline gap-1.5 flex-wrap">
+              <span class="text-xs text-slate-400 font-semibold">R$</span>
+              <h2 id="heroAvailableToSpend" class="text-3xl font-black tracking-tight text-white leading-none">0,00</h2>
             </div>
-            <div class="flex items-baseline gap-2">
-              <span class="text-xs sm:text-sm text-slate-300">R$</span>
-              <h2 id="heroAvailableToSpend" class="text-3xl sm:text-5xl font-black tracking-tight text-white">0,00</h2>
-            </div>
-            <p id="heroAdviceText" class="text-xs sm:text-sm text-slate-300 max-w-lg">
-              Calculando o saldo livre após pagar todas as contas fixas, empréstimos e faturas de cartões...
+            <p id="heroAdviceText" class="text-[11px] text-slate-300 mt-2 leading-tight">
+              Calculando saldo livre descontando contas, faturas e gastos...
             </p>
           </div>
 
-          <!-- Termômetro diário de segurança -->
-          <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex flex-col gap-2 min-w-[220px]">
-            <div class="flex items-center justify-between text-xs text-slate-300">
-              <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-emerald-400"></i> Limite Diário Sugerido</span>
+          <!-- Termômetro diário -->
+          <div class="mt-3 p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-between gap-2">
+            <div>
+              <span class="text-[10px] text-slate-300 block uppercase font-medium">Limite Diário Sugerido</span>
+              <div class="text-base font-extrabold text-emerald-300 leading-tight" id="heroDailyLimit">
+                R$ 0,00 <span class="text-[10px] font-normal text-slate-300">/ dia</span>
+              </div>
             </div>
-            <div class="text-xl sm:text-2xl font-bold text-emerald-300" id="heroDailyLimit">
-              R$ 0,00 <span class="text-xs font-normal text-slate-300">/ dia</span>
+            <div class="text-right">
+              <span class="text-[10px] text-slate-300 block" id="heroDaysRemaining">Restam X dias</span>
+              <span class="text-[10px] text-emerald-400 font-bold">no mês</span>
             </div>
-            <p class="text-[11px] text-slate-300 leading-tight" id="heroDaysRemaining">
-              Restam X dias para fechar o mês.
-            </p>
           </div>
-        </div>
 
-        <!-- Barra de Progresso do Orçamento Mensal -->
-        <div class="mt-6 pt-5 border-t border-white/10">
-          <div class="flex justify-between items-center text-xs mb-1.5 text-slate-300">
-            <span>Comprometimento da Renda Total</span>
-            <span id="budgetProgressPercent" class="font-bold text-white">0%</span>
-          </div>
-          <div class="w-full bg-slate-700/60 rounded-full h-2.5 overflow-hidden p-0.5">
+          <!-- Barra de progresso -->
+          <div class="mt-3 w-full bg-slate-700/60 rounded-full h-1.5 overflow-hidden">
             <div id="budgetProgressBar" class="bg-gradient-to-r from-emerald-400 to-teal-300 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
           </div>
         </div>
-      </div>
 
-      <!-- 4 CARDS DE MÉTRICAS RÁPIDAS -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        
-        <!-- Receitas (Salário + Extras) -->
-        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm relative overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Entradas / Salário</span>
-            <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+        <!-- 4 CARDS DE MÉTRICAS EM GRADE 2x2 COMPACTA -->
+        <div class="grid grid-cols-2 gap-2.5">
+          
+          <!-- Entradas / Salário -->
+          <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Entradas</span>
+              <div class="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i>
+              </div>
             </div>
+            <div id="statIncome" class="text-base font-extrabold text-slate-900 truncate">R$ 0,00</div>
+            <span class="text-[10px] text-slate-400">Salário do casal</span>
           </div>
-          <div id="statIncome" class="text-lg sm:text-2xl font-bold text-slate-900">R$ 0,00</div>
-          <p class="text-[11px] text-slate-400 mt-1">Salário e rendas do casal</p>
+
+          <!-- Faturas Cartões -->
+          <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold text-purple-600 uppercase tracking-wider">Cartões</span>
+              <div class="w-6 h-6 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+              </div>
+            </div>
+            <div id="statCreditCards" class="text-base font-extrabold text-purple-700 truncate">R$ 0,00</div>
+            <span class="text-[10px] text-slate-400">Faturas do mês</span>
+          </div>
+
+          <!-- Pix & Dinheiro -->
+          <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Pix / Dinheiro</span>
+              <div class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+              </div>
+            </div>
+            <div id="statPixDebit" class="text-base font-extrabold text-blue-700 truncate">R$ 0,00</div>
+            <span class="text-[10px] text-slate-400">Já saiu da conta</span>
+          </div>
+
+          <!-- Contas a Pagar -->
+          <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold text-amber-600 uppercase tracking-wider">A Pagar</span>
+              <div class="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+              </div>
+            </div>
+            <div id="statBillsPending" class="text-base font-extrabold text-amber-600 truncate">R$ 0,00</div>
+            <span class="text-[10px] text-slate-400">Boletos pendentes</span>
+          </div>
+
         </div>
 
-        <!-- Gastos no Cartão de Crédito -->
-        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm relative overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Faturas Cartões</span>
-            <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <i data-lucide="credit-card" class="w-4 h-4"></i>
-            </div>
-          </div>
-          <div id="statCreditCards" class="text-lg sm:text-2xl font-bold text-purple-700">R$ 0,00</div>
-          <p class="text-[11px] text-slate-400 mt-1">Soma de todos os cartões</p>
+        <!-- BOTÕES RÁPIDOS (TOUCH-FRIENDLY NO CELULAR) -->
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="openTransactionModal('expense')" class="py-3 px-3 rounded-2xl bg-rose-600 active:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/20 flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="minus-circle" class="w-4 h-4"></i>
+            <span>Novo Gasto</span>
+          </button>
+
+          <button onclick="openTransactionModal('income')" class="py-3 px-3 rounded-2xl bg-emerald-600 active:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Salário / Receita</span>
+          </button>
         </div>
 
-        <!-- Gastos no Pix / Débito / Dinheiro -->
-        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm relative overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pix & Dinheiro</span>
-            <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <i data-lucide="zap" class="w-4 h-4"></i>
-            </div>
+        <!-- DIVISÃO DOS GASTOS DO CASAL -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+              <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Quem Gastou Este Mês</span>
+            </h3>
           </div>
-          <div id="statPixDebit" class="text-lg sm:text-2xl font-bold text-blue-700">R$ 0,00</div>
-          <p class="text-[11px] text-slate-400 mt-1">Já saiu da conta agora</p>
-        </div>
 
-        <!-- Contas a Pagar / Pendentes -->
-        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm relative overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Contas a Pagar</span>
-            <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <i data-lucide="alert-circle" class="w-4 h-4"></i>
-            </div>
-          </div>
-          <div id="statBillsPending" class="text-lg sm:text-2xl font-bold text-amber-600">R$ 0,00</div>
-          <p class="text-[11px] text-slate-400 mt-1">Boletos e empréstimos pendentes</p>
-        </div>
-
-      </div>
-
-      <!-- BOTÕES DE AÇÕES RÁPIDAS (MOBILE FRIENDLY) -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <button onclick="openTransactionModal('expense')" class="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 text-white font-semibold shadow-md shadow-rose-500/20 hover:brightness-105 active:scale-95 transition">
-          <i data-lucide="minus-circle" class="w-5 h-5"></i>
-          <span>Novo Gasto</span>
-        </button>
-
-        <button onclick="openTransactionModal('income')" class="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold shadow-md shadow-emerald-500/20 hover:brightness-105 active:scale-95 transition">
-          <i data-lucide="plus-circle" class="w-5 h-5"></i>
-          <span>Nova Receita</span>
-        </button>
-
-        <button onclick="openBillModal()" class="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-white border border-slate-200 text-slate-700 font-semibold shadow-sm hover:bg-slate-50 active:scale-95 transition">
-          <i data-lucide="calendar-plus" class="w-5 h-5 text-amber-500"></i>
-          <span>Nova Conta Fixa</span>
-        </button>
-
-        <button onclick="openCardModal()" class="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-white border border-slate-200 text-slate-700 font-semibold shadow-sm hover:bg-slate-50 active:scale-95 transition">
-          <i data-lucide="credit-card" class="w-5 h-5 text-purple-500"></i>
-          <span>Novo Cartão</span>
-        </button>
-      </div>
-
-      <!-- GRÁFICOS: QUEM GASTOU MAIS & CATEGORIAS -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Divisão do Casal (Quem gastou quanto) -->
-        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <i data-lucide="users" class="w-4 h-4 text-emerald-600"></i>
-                <span>Divisão dos Gastos do Casal</span>
-              </h3>
-            </div>
-            <div class="h-44 relative flex items-center justify-center">
+          <div class="flex items-center gap-3">
+            <div class="w-24 h-24 shrink-0 relative flex items-center justify-center">
               <canvas id="coupleChart"></canvas>
             </div>
-          </div>
-
-          <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-center text-xs">
-            <div class="p-2 rounded-xl bg-blue-50 border border-blue-100">
-              <span id="chartPerson1Name" class="font-semibold text-blue-700 block truncate">Marido</span>
-              <span id="chartPerson1Total" class="font-bold text-slate-900 text-sm">R$ 0,00</span>
-            </div>
-            <div class="p-2 rounded-xl bg-pink-50 border border-pink-100">
-              <span id="chartPerson2Name" class="font-semibold text-pink-700 block truncate">Esposa</span>
-              <span id="chartPerson2Total" class="font-bold text-slate-900 text-sm">R$ 0,00</span>
+            <div class="flex-1 space-y-2 text-xs">
+              <div class="p-2 rounded-xl bg-blue-50/70 border border-blue-100 flex items-center justify-between">
+                <span id="chartPerson1Name" class="font-bold text-blue-700 truncate">Marido</span>
+                <span id="chartPerson1Total" class="font-extrabold text-slate-900 shrink-0">R$ 0,00</span>
+              </div>
+              <div class="p-2 rounded-xl bg-pink-50/70 border border-pink-100 flex items-center justify-between">
+                <span id="chartPerson2Name" class="font-bold text-pink-700 truncate">Esposa</span>
+                <span id="chartPerson2Total" class="font-extrabold text-slate-900 shrink-0">R$ 0,00</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Categorias de Gastos (Donut Chart) -->
-        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm lg:col-span-2">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-600"></i>
-              <span>Para Onde Está Indo o Dinheiro?</span>
+        <!-- CATEGORIAS DE GASTOS -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+              <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Onde Estamos Gastando</span>
             </h3>
-            <span class="text-xs text-slate-400">Por Categoria</span>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-            <div class="h-52 relative flex items-center justify-center">
-              <canvas id="categoryChart"></canvas>
-            </div>
-            <div id="categoryLegendList" class="space-y-2 text-xs max-h-52 overflow-y-auto pr-1">
-              <!-- Preenchido via Javascript -->
-              <p class="text-slate-400 text-center py-6">Nenhum gasto registrado ainda neste mês.</p>
-            </div>
+          <div id="categoryLegendList" class="space-y-1.5 text-xs pt-1">
+            <p class="text-slate-400 text-center py-3 text-xs">Nenhum gasto registrado ainda neste mês.</p>
           </div>
         </div>
 
-      </div>
-
-      <!-- ÚLTIMOS LANÇAMENTOS DO CASAL -->
-      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-            <i data-lucide="clock" class="w-4 h-4 text-emerald-600"></i>
-            <span>Últimos Lançamentos</span>
-          </h3>
-          <button onclick="switchTab('transactions')" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition">
-            Ver todos &rarr;
-          </button>
-        </div>
-
-        <div id="dashboardRecentList" class="divide-y divide-slate-100">
-          <!-- Preenchido dinamicamente -->
-          <div class="py-8 text-center text-slate-400 text-sm">
-            Nenhum lançamento no mês selecionado. Clique em <b>"Novo Gasto"</b> para começar!
+        <!-- ÚLTIMOS LANÇAMENTOS -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Últimos Lançamentos</span>
+            </h3>
+            <button onclick="switchTab('transactions')" class="text-[11px] font-bold text-emerald-600">
+              Ver todos
+            </button>
           </div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ==================== ABA 2: GASTOS & EXTRATO ==================== -->
-    <section id="tab-transactions" class="space-y-5 hidden">
-      
-      <!-- Barra de Filtros e Busca -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-        <div class="relative flex-1">
-          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-          <input type="text" id="txSearchInput" placeholder="Buscar gasto por nome..." 
-            class="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-        </div>
-
-        <div class="flex items-center gap-2 flex-wrap">
-          <!-- Filtro por Quem Gastou -->
-          <select id="txFilterPerson" class="text-xs sm:text-sm py-2 px-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
-            <option value="all">Quem gastou: Todos</option>
-            <option value="p1" id="filterOptionP1">Marido</option>
-            <option value="p2" id="filterOptionP2">Esposa</option>
-          </select>
-
-          <!-- Filtro por Forma de Pagamento -->
-          <select id="txFilterMethod" class="text-xs sm:text-sm py-2 px-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
-            <option value="all">Forma: Todas</option>
-            <option value="pix">⚡ Pix</option>
-            <option value="card">💳 Cartão de Crédito</option>
-            <option value="debit">💵 Débito / Dinheiro</option>
-          </select>
-
-          <button onclick="openTransactionModal('expense')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition">
-            <i data-lucide="plus" class="w-4 h-4"></i> Adicionar
-          </button>
-        </div>
-      </div>
-
-      <!-- Lista Completa de Transações -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Histórico de Movimentações</span>
-          <span id="txTotalFilteredCount" class="text-xs font-medium text-slate-500">0 lançamentos</span>
-        </div>
-
-        <div id="transactionsFullList" class="divide-y divide-slate-100">
-          <!-- Preenchido dinamicamente -->
-          <div class="p-8 text-center text-slate-400 text-sm">
-            Carregando transações...
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ==================== ABA 3: NOSSOS CARTÕES DE CRÉDITO ==================== -->
-    <section id="tab-cards" class="space-y-5 hidden">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-slate-900">Cartões de Crédito</h2>
-          <p class="text-xs text-slate-500">Acompanhe a fatura atual e o limite disponível de cada cartão</p>
-        </div>
-        <button onclick="openCardModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition">
-          <i data-lucide="plus" class="w-4 h-4"></i> Novo Cartão
-        </button>
-      </div>
-
-      <!-- Resumo Total de Faturas dos Cartões -->
-      <div class="bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span class="text-xs text-purple-200 font-medium">Faturas somadas deste mês</span>
-          <div class="text-2xl sm:text-3xl font-extrabold text-white mt-0.5" id="totalCardsDueAmount">R$ 0,00</div>
-          <p class="text-xs text-purple-300 mt-1">Este valor já está reservado no cálculo do que vocês ainda podem gastar.</p>
-        </div>
-        <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 text-xs">
-          <span class="text-purple-200 block">Total de limite contratado:</span>
-          <span class="text-base font-bold text-white" id="totalCardsLimitAmount">R$ 0,00</span>
-        </div>
-      </div>
-
-      <!-- Grid com os cartões cadastrados -->
-      <div id="cardsListGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Preenchido dinamicamente -->
-      </div>
-    </section>
-
-    <!-- ==================== ABA 4: CONTAS FIXAS & EMPRÉSTIMOS ==================== -->
-    <section id="tab-bills" class="space-y-6 hidden">
-      
-      <!-- Seção de Contas Fixas / Boletos -->
-      <div>
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900">Contas Fixas & Boletos</h2>
-            <p class="text-xs text-slate-500">Aluguel, luz, água, internet e boletos mensais</p>
-          </div>
-          <button onclick="openBillModal('bill')" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-3.5 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition">
-            <i data-lucide="plus" class="w-4 h-4"></i> Nova Conta
-          </button>
-        </div>
-
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div id="fixedBillsList" class="divide-y divide-slate-100">
+          <div id="dashboardRecentList" class="divide-y divide-slate-100">
             <!-- Preenchido via JS -->
           </div>
         </div>
-      </div>
 
-      <!-- Seção de Dinheiro Emprestado / Dívidas e Financiamentos -->
-      <div class="pt-4 border-t border-slate-200">
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="hand-coins" class="w-5 h-5 text-indigo-600"></i>
-              <span>Dinheiro Emprestado & Parcelamentos</span>
-            </h2>
-            <p class="text-xs text-slate-500">Controle de empréstimos (banco, amigos, parentes) com parcelas e saldo restante</p>
-          </div>
-          <button onclick="openBillModal('loan')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-3.5 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition">
-            <i data-lucide="plus" class="w-4 h-4"></i> Novo Empréstimo
-          </button>
-        </div>
+      </section>
 
-        <div id="loansListGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Preenchido via JS -->
-        </div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- ==================== MODAL: LANÇAMENTO RÁPIDO (Gasto ou Receita) ==================== -->
-  <div id="transactionModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 modal-backdrop hidden">
-    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-      
-      <!-- Topo do Modal -->
-      <div id="txModalHeader" class="p-5 bg-rose-600 text-white flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div id="txModalIconBox" class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-            <i data-lucide="minus-circle" class="w-5 h-5"></i>
-          </div>
-          <h3 id="txModalTitle" class="font-bold text-base">Registrar Novo Gasto</h3>
-        </div>
-        <button onclick="closeModal('transactionModal')" class="text-white/80 hover:text-white p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- Formulário -->
-      <form id="transactionForm" onsubmit="handleSaveTransaction(event)" class="p-5 space-y-4">
-        <input type="hidden" id="txType" value="expense">
-        <input type="hidden" id="txId" value="">
-
-        <!-- Valor Grande -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Valor (R$)</label>
+      <!-- ==================== ABA 2: EXTRATO COMPLETO ==================== -->
+      <section id="tab-transactions" class="space-y-3 hidden">
+        <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm space-y-2">
           <div class="relative">
-            <span class="absolute left-4 top-3 text-lg font-bold text-slate-400">R$</span>
-            <input type="number" step="0.01" min="0.01" id="txAmount" required placeholder="0,00"
-              class="w-full pl-12 pr-4 py-3 text-2xl font-black rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 text-slate-900">
-          </div>
-        </div>
-
-        <!-- Descrição -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Descrição</label>
-          <input type="text" id="txDescription" required placeholder="Ex: Mercado semanal, Padaria, Remédio, Salário..."
-            class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-        </div>
-
-        <!-- Quem Gastou / Quem Recebeu -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Quem realizou?</label>
-          <div class="grid grid-cols-2 gap-2">
-            <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 transition">
-              <input type="radio" name="txPerson" value="p1" checked class="accent-blue-600">
-              <span id="txLabelPerson1" class="text-xs sm:text-sm font-bold text-blue-700">Marido</span>
-            </label>
-            <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50 transition">
-              <input type="radio" name="txPerson" value="p2" class="accent-pink-600">
-              <span id="txLabelPerson2" class="text-xs sm:text-sm font-bold text-pink-700">Esposa</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Forma de Pagamento (Apenas se for despesa) -->
-        <div id="txPaymentMethodSection">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Forma de Pagamento</label>
-          <div class="grid grid-cols-3 gap-2 mb-2">
-            <button type="button" onclick="setPaymentType('pix')" id="btnMethodPix" class="method-btn p-2 rounded-xl border text-xs font-bold border-emerald-500 bg-emerald-50 text-emerald-800 flex flex-col items-center gap-1">
-              <i data-lucide="zap" class="w-4 h-4"></i> Pix
-            </button>
-            <button type="button" onclick="setPaymentType('card')" id="btnMethodCard" class="method-btn p-2 rounded-xl border text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 flex flex-col items-center gap-1">
-              <i data-lucide="credit-card" class="w-4 h-4"></i> Cartão Crédito
-            </button>
-            <button type="button" onclick="setPaymentType('debit')" id="btnMethodDebit" class="method-btn p-2 rounded-xl border text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 flex flex-col items-center gap-1">
-              <i data-lucide="banknote" class="w-4 h-4"></i> Dinheiro / Débito
-            </button>
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+            <input type="text" id="txSearchInput" placeholder="Buscar por nome ou categoria..." 
+              class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50">
           </div>
 
-          <!-- Seletor do Cartão Específico (aparece se for Cartão de Crédito) -->
-          <div id="txCardSelectorWrapper" class="hidden mt-2">
-            <label class="block text-xs font-medium text-slate-500 mb-1">Selecione o Cartão Utilizado:</label>
-            <select id="txCardId" class="w-full px-3 py-2 text-sm rounded-xl border border-purple-200 bg-purple-50/50 text-purple-900 font-medium focus:ring-2 focus:ring-purple-500">
-              <!-- Cartões preenchidos via JS -->
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <select id="txFilterPerson" class="py-2 px-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700">
+              <option value="all">Pessoa: Todas</option>
+              <option value="p1" id="filterOptionP1">Marido</option>
+              <option value="p2" id="filterOptionP2">Esposa</option>
+            </select>
+
+            <select id="txFilterMethod" class="py-2 px-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700">
+              <option value="all">Forma: Todas</option>
+              <option value="pix">⚡ Pix</option>
+              <option value="card">💳 Cartão Crédito</option>
+              <option value="debit">💵 Dinheiro / Débito</option>
             </select>
           </div>
         </div>
 
-        <!-- Categoria e Data -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Categoria</label>
-            <select id="txCategory" class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-              <option value="Mercado">🛒 Mercado / Feira</option>
-              <option value="Alimentação">🍔 Restaurante / Lanches</option>
-              <option value="Casa">🏠 Casa / Manutenção</option>
-              <option value="Farmácia">💊 Saúde & Farmácia</option>
-              <option value="Transporte">🚗 Transporte / Uber / Gasolina</option>
-              <option value="Lazer">🎉 Lazer & Passeios</option>
-              <option value="Vestuário">👕 Roupas & Cuidados</option>
-              <option value="Outros">📦 Outros Gastos</option>
-            </select>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-3 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-500">
+            <span>HISTÓRICO</span>
+            <span id="txTotalFilteredCount">0 itens</span>
           </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Data</label>
-            <input type="date" id="txDate" required
-              class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <div id="transactionsFullList" class="divide-y divide-slate-100">
+            <!-- Preenchido via JS -->
           </div>
         </div>
+      </section>
 
-        <div class="pt-2 flex gap-2">
-          <button type="button" onclick="closeModal('transactionModal')" class="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition">
-            Cancelar
-          </button>
-          <button type="submit" id="txSubmitBtn" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition">
-            Salvar Lançamento
-          </button>
-        </div>
-      </form>
-
-    </div>
-  </div>
-
-  <!-- ==================== MODAL: NOVO CARTÃO DE CRÉDITO ==================== -->
-  <div id="cardModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 modal-backdrop hidden">
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-      
-      <div class="p-5 bg-purple-700 text-white flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-            <i data-lucide="credit-card" class="w-5 h-5"></i>
-          </div>
-          <h3 class="font-bold text-base">Gerenciar Cartão de Crédito</h3>
-        </div>
-        <button onclick="closeModal('cardModal')" class="text-white/80 hover:text-white p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="cardForm" onsubmit="handleSaveCard(event)" class="p-5 space-y-4">
-        <input type="hidden" id="cardEditId" value="">
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nome do Cartão / Banco</label>
-          <input type="text" id="cardNameInput" required placeholder="Ex: Nubank, Inter, Bradesco, C6..."
-            class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Limite Total (R$)</label>
-          <input type="number" step="0.01" min="0" id="cardLimitInput" required placeholder="Ex: 2500,00"
-            class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Dia do Fechamento</label>
-            <input type="number" min="1" max="31" id="cardClosingDay" required placeholder="Ex: 15"
-              class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Dia do Vencimento</label>
-            <input type="number" min="1" max="31" id="cardDueDay" required placeholder="Ex: 22"
-              class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">De quem é este cartão?</label>
-          <div class="grid grid-cols-2 gap-2">
-            <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 transition">
-              <input type="radio" name="cardOwner" value="p1" checked class="accent-blue-600">
-              <span id="cardLabelPerson1" class="text-xs font-bold text-blue-700">Marido</span>
-            </label>
-            <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50 transition">
-              <input type="radio" name="cardOwner" value="p2" class="accent-pink-600">
-              <span id="cardLabelPerson2" class="text-xs font-bold text-pink-700">Esposa</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="pt-2 flex gap-2">
-          <button type="button" onclick="closeModal('cardModal')" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50">
-            Cancelar
-          </button>
-          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-md">
-            Salvar Cartão
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ==================== MODAL: CONTA FIXA OU EMPRÉSTIMO ==================== -->
-  <div id="billModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 modal-backdrop hidden">
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-      
-      <div id="billModalHeader" class="p-5 bg-amber-600 text-white flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-            <i data-lucide="file-text" class="w-5 h-5"></i>
-          </div>
-          <h3 id="billModalTitle" class="font-bold text-base">Nova Conta Fixa ou Empréstimo</h3>
-        </div>
-        <button onclick="closeModal('billModal')" class="text-white/80 hover:text-white p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="billForm" onsubmit="handleSaveBill(event)" class="p-5 space-y-4">
-        <input type="hidden" id="billType" value="bill"> <!-- bill ou loan -->
-        <input type="hidden" id="billEditId" value="">
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tipo de Compromisso</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="setBillType('bill')" id="btnTypeBill" class="p-2.5 rounded-xl border text-xs font-bold border-amber-500 bg-amber-50 text-amber-900 flex items-center justify-center gap-1.5">
-              <i data-lucide="calendar"></i> Conta Fixa / Boleto
-            </button>
-            <button type="button" onclick="setBillType('loan')" id="btnTypeLoan" class="p-2.5 rounded-xl border text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5">
-              <i data-lucide="hand-coins"></i> Dinheiro Emprestado
+      <!-- ==================== ABA 3: CARTÕES DE CRÉDITO ==================== -->
+      <section id="tab-cards" class="space-y-3 hidden">
+        <div class="bg-gradient-to-r from-purple-950 to-indigo-900 text-white p-4 rounded-2xl shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-purple-200 font-medium">Faturas Somadas</span>
+            <button onclick="openCardModal()" class="px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold text-white flex items-center gap-1">
+              <i data-lucide="plus" class="w-3 h-3"></i> Novo Cartão
             </button>
           </div>
+          <div class="text-2xl font-black text-white mt-1" id="totalCardsDueAmount">R$ 0,00</div>
+          <p class="text-[11px] text-purple-300 mt-0.5">Descontado automaticamente do que vocês podem gastar.</p>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nome / Identificação</label>
-          <input type="text" id="billNameInput" required placeholder="Ex: Aluguel, Luz, Empréstimo Fulano, Financiamento..."
-            class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+        <div id="cardsListGrid" class="space-y-3">
+          <!-- Cartões preenchidos via JS -->
         </div>
+      </section>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Valor Parcela (R$)</label>
-            <input type="number" step="0.01" min="0.01" id="billAmountInput" required placeholder="0,00"
-              class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+      <!-- ==================== ABA 4: CONTAS & EMPRÉSTIMOS ==================== -->
+      <section id="tab-bills" class="space-y-4 hidden">
+        
+        <!-- Boletos / Contas Fixas -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-xs text-slate-800 uppercase tracking-wider">Contas Fixas & Boletos</h3>
+            <button onclick="openBillModal('bill')" class="px-2 py-1 bg-amber-600 text-white rounded-lg text-xs font-bold flex items-center gap-1">
+              <i data-lucide="plus" class="w-3 h-3"></i> Nova Conta
+            </button>
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Dia do Vencimento</label>
-            <input type="number" min="1" max="31" id="billDueDayInput" required placeholder="Dia (1 a 31)"
-              class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100" id="fixedBillsList">
+            <!-- Preenchido via JS -->
           </div>
         </div>
 
-        <!-- Campos específicos para Empréstimo -->
-        <div id="loanSpecificFields" class="hidden space-y-3 p-3 bg-slate-50 rounded-2xl border border-slate-200">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Parcelas Restantes</label>
-              <input type="number" min="1" id="loanInstallmentsLeft" placeholder="Ex: 6"
-                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white">
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Saldo Devedor Total</label>
-              <input type="number" step="0.01" min="0" id="loanTotalRemaining" placeholder="Ex: 1800,00"
-                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white">
-            </div>
+        <!-- Empréstimos -->
+        <div class="space-y-2 pt-2 border-t border-slate-200">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-xs text-slate-800 uppercase tracking-wider flex items-center gap-1">
+              <i data-lucide="hand-coins" class="w-3.5 h-3.5 text-indigo-600"></i> Dinheiro Emprestado
+            </h3>
+            <button onclick="openBillModal('loan')" class="px-2 py-1 bg-indigo-600 text-white rounded-lg text-xs font-bold flex items-center gap-1">
+              <i data-lucide="plus" class="w-3 h-3"></i> Novo Empréstimo
+            </button>
           </div>
-          <p class="text-[11px] text-slate-500">Ajuda o casal a ver quantos meses faltam para se livrar dessa dívida!</p>
+          <div class="space-y-2.5" id="loansListGrid">
+            <!-- Preenchido via JS -->
+          </div>
         </div>
 
-        <div class="pt-2 flex gap-2">
-          <button type="button" onclick="closeModal('billModal')" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50">
-            Cancelar
-          </button>
-          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-md">
-            Salvar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+      </section>
 
-  <!-- ==================== MODAL: CONFIGURAÇÕES E NOMES DO CASAL ==================== -->
-  <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 modal-backdrop hidden">
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-      
-      <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-            <i data-lucide="settings" class="w-5 h-5"></i>
-          </div>
-          <h3 class="font-bold text-base">Configurações do Casal</h3>
-        </div>
-        <button onclick="closeModal('settingsModal')" class="text-white/80 hover:text-white p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
+    </main>
+
+    <!-- ==================== BARRA DE NAVEGAÇÃO INFERIOR FIXA (APP STYLE) ==================== -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+      <div class="max-w-md mx-auto px-3 py-1 flex items-center justify-between">
+        
+        <!-- Tab: Início -->
+        <button onclick="switchTab('dashboard')" id="nav-btn-dashboard" class="flex-1 py-1 flex flex-col items-center justify-center text-emerald-600 transition">
+          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+          <span class="text-[10px] font-bold mt-0.5">Início</span>
         </button>
-      </div>
 
-      <div class="p-5 space-y-5 max-h-[80vh] overflow-y-auto">
-        <!-- Nomes do Casal -->
-        <div class="space-y-3">
-          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="users" class="w-4 h-4 text-emerald-600"></i> Nomes de Vocês Dois
-          </h4>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Seu Nome (Marido):</label>
-              <input type="text" id="settingP1Name" value="Marido" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200">
+        <!-- Tab: Extrato -->
+        <button onclick="switchTab('transactions')" id="nav-btn-transactions" class="flex-1 py-1 flex flex-col items-center justify-center text-slate-400 hover:text-slate-700 transition">
+          <i data-lucide="receipt" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium mt-0.5">Extrato</span>
+        </button>
+
+        <!-- BOTÃO CENTRAL DESTACADO: NOVO GASTO RÁPIDO -->
+        <div class="flex-1 flex justify-center -mt-5">
+          <button onclick="openTransactionModal('expense')" class="w-12 h-12 rounded-full bg-gradient-to-tr from-rose-600 to-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/30 active:scale-90 transition border-2 border-white">
+            <i data-lucide="plus" class="w-6 h-6 stroke-[2.5]"></i>
+          </button>
+        </div>
+
+        <!-- Tab: Cartões -->
+        <button onclick="switchTab('cards')" id="nav-btn-cards" class="flex-1 py-1 flex flex-col items-center justify-center text-slate-400 hover:text-slate-700 transition">
+          <i data-lucide="credit-card" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium mt-0.5">Cartões</span>
+        </button>
+
+        <!-- Tab: Contas -->
+        <button onclick="switchTab('bills')" id="nav-btn-bills" class="flex-1 py-1 flex flex-col items-center justify-center text-slate-400 hover:text-slate-700 transition">
+          <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium mt-0.5">Contas</span>
+        </button>
+
+      </div>
+    </nav>
+
+    <!-- ==================== MODAL BOTTOM SHEET: NOVO GASTO / RECEITA ==================== -->
+    <div id="transactionModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 modal-backdrop hidden">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in slide-in-from-bottom duration-200 max-h-[92vh] flex flex-col">
+        
+        <div id="txModalHeader" class="p-4 bg-rose-600 text-white flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2">
+            <div id="txModalIconBox" class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
+              <i data-lucide="minus-circle" class="w-4 h-4"></i>
             </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">Nome da Esposa:</label>
-              <input type="text" id="settingP2Name" value="Esposa" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200">
+            <h3 id="txModalTitle" class="font-bold text-sm">Registrar Novo Gasto</h3>
+          </div>
+          <button onclick="closeModal('transactionModal')" class="p-1 text-white/80 hover:text-white">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <form id="transactionForm" onsubmit="handleSaveTransaction(event)" class="p-4 space-y-3.5 overflow-y-auto">
+          <input type="hidden" id="txType" value="expense">
+
+          <!-- Valor Grande -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Valor</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-xl font-bold text-slate-400">R$</span>
+              <input type="number" step="0.01" min="0.01" id="txAmount" required placeholder="0,00"
+                class="w-full pl-11 pr-3 py-2 text-2xl font-black rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 text-slate-900">
             </div>
           </div>
 
-          <!-- Perfil deste Celular -->
-          <div class="pt-2">
-            <label class="block text-xs font-medium text-slate-600 mb-1">Quem mais usa ESTE aparelho (para agilizar lançamentos)?</label>
+          <!-- Descrição -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">O que foi comprado?</label>
+            <input type="text" id="txDescription" required placeholder="Ex: Mercado, Padaria, Farmácia..."
+              class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+          </div>
+
+          <!-- Quem gastou? -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Quem realizou?</label>
             <div class="grid grid-cols-2 gap-2">
-              <label class="flex items-center justify-center gap-2 p-2 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 text-xs font-bold text-slate-700">
+              <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 text-xs font-bold text-blue-700">
+                <input type="radio" name="txPerson" value="p1" checked class="accent-blue-600">
+                <span id="txLabelPerson1">Marido</span>
+              </label>
+              <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50 text-xs font-bold text-pink-700">
+                <input type="radio" name="txPerson" value="p2" class="accent-pink-600">
+                <span id="txLabelPerson2">Esposa</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Forma de Pagamento -->
+          <div id="txPaymentMethodSection">
+            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Como foi pago?</label>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button type="button" onclick="setPaymentType('pix')" id="btnMethodPix" class="method-btn p-2 rounded-xl border text-[11px] font-bold border-emerald-500 bg-emerald-50 text-emerald-800 flex flex-col items-center gap-1">
+                <i data-lucide="zap" class="w-4 h-4"></i> Pix
+              </button>
+              <button type="button" onclick="setPaymentType('card')" id="btnMethodCard" class="method-btn p-2 rounded-xl border text-[11px] font-bold border-slate-200 text-slate-600 flex flex-col items-center gap-1">
+                <i data-lucide="credit-card" class="w-4 h-4"></i> Cartão
+              </button>
+              <button type="button" onclick="setPaymentType('debit')" id="btnMethodDebit" class="method-btn p-2 rounded-xl border text-[11px] font-bold border-slate-200 text-slate-600 flex flex-col items-center gap-1">
+                <i data-lucide="banknote" class="w-4 h-4"></i> Dinheiro
+              </button>
+            </div>
+
+            <!-- Seletor do Cartão se for Cartão de Crédito -->
+            <div id="txCardSelectorWrapper" class="hidden mt-2">
+              <select id="txCardId" class="w-full px-3 py-2 text-xs rounded-xl border border-purple-200 bg-purple-50 text-purple-900 font-bold">
+                <!-- Cartões preenchidos via JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Categoria e Data -->
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Categoria</label>
+              <select id="txCategory" class="w-full px-2 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+                <option value="Mercado">🛒 Mercado / Feira</option>
+                <option value="Alimentação">🍔 Restaurante / Lanche</option>
+                <option value="Casa">🏠 Casa / Utilidades</option>
+                <option value="Farmácia">💊 Saúde & Remédios</option>
+                <option value="Transporte">🚗 Uber / Gasolina</option>
+                <option value="Lazer">🎉 Lazer & Passeio</option>
+                <option value="Vestuário">👕 Roupas & Cuidados</option>
+                <option value="Outros">📦 Outros</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data</label>
+              <input type="date" id="txDate" required class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-200 bg-white">
+            </div>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" onclick="closeModal('transactionModal')" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs">
+              Cancelar
+            </button>
+            <button type="submit" id="txSubmitBtn" class="flex-1 py-2.5 rounded-xl bg-rose-600 text-white font-bold text-xs shadow-md">
+              Salvar
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- ==================== MODAL: CARTÃO DE CRÉDITO ==================== -->
+    <div id="cardModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 modal-backdrop hidden">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 p-4 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="credit-card" class="w-4 h-4 text-purple-600"></i> Novo Cartão
+          </h3>
+          <button onclick="closeModal('cardModal')" class="text-slate-400 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <form id="cardForm" onsubmit="handleSaveCard(event)" class="space-y-3 text-xs">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Nome do Cartão</label>
+            <input type="text" id="cardNameInput" required placeholder="Ex: Nubank, Inter, Bradesco..."
+              class="w-full px-3 py-2 rounded-xl border border-slate-200">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Limite Total (R$)</label>
+            <input type="number" step="0.01" min="0" id="cardLimitInput" required placeholder="Ex: 2500,00"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Dia Fecha</label>
+              <input type="number" min="1" max="31" id="cardClosingDay" required placeholder="Ex: 10" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Dia Vence</label>
+              <input type="number" min="1" max="31" id="cardDueDay" required placeholder="Ex: 17" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">De quem é este cartão?</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-200 font-bold text-blue-700">
+                <input type="radio" name="cardOwner" value="p1" checked class="accent-blue-600">
+                <span id="cardLabelPerson1">Marido</span>
+              </label>
+              <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-200 font-bold text-pink-700">
+                <input type="radio" name="cardOwner" value="p2" class="accent-pink-600">
+                <span id="cardLabelPerson2">Esposa</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" onclick="closeModal('cardModal')" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold">Cancelar</button>
+            <button type="submit" class="flex-1 py-2.5 rounded-xl bg-purple-600 text-white font-bold shadow-md">Salvar Cartão</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================== MODAL: CONTA FIXA / EMPRÉSTIMO ==================== -->
+    <div id="billModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 modal-backdrop hidden">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 p-4 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h3 id="billModalTitle" class="font-bold text-sm text-slate-900">Nova Conta Fixa</h3>
+          <button onclick="closeModal('billModal')" class="text-slate-400 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <form id="billForm" onsubmit="handleSaveBill(event)" class="space-y-3 text-xs">
+          <input type="hidden" id="billType" value="bill">
+
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="setBillType('bill')" id="btnTypeBill" class="p-2 rounded-xl border font-bold border-amber-500 bg-amber-50 text-amber-900 text-center">
+              Conta Fixa
+            </button>
+            <button type="button" onclick="setBillType('loan')" id="btnTypeLoan" class="p-2 rounded-xl border font-bold border-slate-200 text-slate-600 text-center">
+              Empréstimo
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Descrição</label>
+            <input type="text" id="billNameInput" required placeholder="Ex: Aluguel, Luz, Empréstimo..." class="w-full px-3 py-2 rounded-xl border border-slate-200">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Valor (R$)</label>
+              <input type="number" step="0.01" min="0.01" id="billAmountInput" required placeholder="0,00" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Dia Vence</label>
+              <input type="number" min="1" max="31" id="billDueDayInput" required placeholder="Dia" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+            </div>
+          </div>
+
+          <div id="loanSpecificFields" class="hidden space-y-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Parcelas Faltando</label>
+                <input type="number" min="1" id="loanInstallmentsLeft" placeholder="Ex: 5" class="w-full px-2 py-1.5 rounded-lg border border-slate-200">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Saldo Devedor Total</label>
+                <input type="number" step="0.01" min="0" id="loanTotalRemaining" placeholder="Ex: 1500,00" class="w-full px-2 py-1.5 rounded-lg border border-slate-200">
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" onclick="closeModal('billModal')" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold">Cancelar</button>
+            <button type="submit" class="flex-1 py-2.5 rounded-xl bg-amber-600 text-white font-bold shadow-md">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==================== MODAL: CONFIGURAÇÕES E NOMES ==================== -->
+    <div id="settingsModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 modal-backdrop hidden">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 p-4 space-y-4 max-h-[85vh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="settings" class="w-4 h-4 text-emerald-600"></i> Configurações do Casal
+          </h3>
+          <button onclick="closeModal('settingsModal')" class="text-slate-400 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-bold text-slate-500 uppercase text-[10px] mb-1">Nossos Nomes</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="settingP1Name" value="Marido" placeholder="Seu nome" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+              <input type="text" id="settingP2Name" value="Esposa" placeholder="Nome da esposa" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-500 uppercase text-[10px] mb-1">Quem mais usa este celular?</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-200 font-bold text-slate-700">
                 <input type="radio" name="settingDeviceProfile" value="p1" checked class="accent-blue-600">
                 <span id="settingLabelP1">Marido</span>
               </label>
-              <label class="flex items-center justify-center gap-2 p-2 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50 text-xs font-bold text-slate-700">
+              <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-200 font-bold text-slate-700">
                 <input type="radio" name="settingDeviceProfile" value="p2" class="accent-pink-600">
                 <span id="settingLabelP2">Esposa</span>
               </label>
             </div>
+            <p class="text-[10px] text-slate-400 mt-1">Ao abrir o "Novo Gasto", este nome já virá selecionado.</p>
           </div>
 
-          <button onclick="saveCoupleSettings()" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition">
+          <button onclick="saveCoupleSettings()" class="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl shadow-sm">
             Salvar Preferências
           </button>
-        </div>
 
-        <hr class="border-slate-200">
+          <hr class="border-slate-200 my-2">
 
-        <!-- Backup & Restauração -->
-        <div class="space-y-3">
-          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i> Cópia de Segurança (Backup)
-          </h4>
-          <p class="text-xs text-slate-500 leading-relaxed">
-            Exporte os dados em um arquivo seguro para guardar ou envie para o WhatsApp do outro.
-          </p>
-          <div class="flex gap-2">
-            <button onclick="exportDataBackup()" class="flex-1 py-2 px-3 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i> Baixar Backup
-            </button>
-            <label class="flex-1 py-2 px-3 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer">
-              <i data-lucide="upload" class="w-3.5 h-3.5"></i> Restaurar
-              <input type="file" id="importBackupFile" accept=".json" onchange="importDataBackup(event)" class="hidden">
-            </label>
+          <div>
+            <label class="block font-bold text-slate-500 uppercase text-[10px] mb-1">Backup dos Dados</label>
+            <div class="flex gap-2">
+              <button onclick="exportDataBackup()" class="flex-1 py-2 border border-slate-200 rounded-xl font-bold text-slate-700 flex items-center justify-center gap-1">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Baixar Dados
+              </button>
+              <label class="flex-1 py-2 border border-slate-200 rounded-xl font-bold text-slate-700 flex items-center justify-center gap-1 cursor-pointer">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i> Restaurar
+                <input type="file" id="importBackupFile" accept=".json" onchange="importDataBackup(event)" class="hidden">
+              </label>
+            </div>
           </div>
-        </div>
 
-        <hr class="border-slate-200">
-
-        <!-- Reset de Dados -->
-        <div>
-          <button onclick="confirmResetAllData()" class="text-xs text-rose-500 hover:text-rose-700 font-semibold underline">
-            Zerar todos os lançamentos e recomeçar do zero
-          </button>
+          <div class="pt-2 text-center">
+            <button onclick="confirmResetAllData()" class="text-[11px] text-rose-500 font-semibold underline">
+              Zerar lançamentos e recomeçar
+            </button>
+          </div>
         </div>
 
       </div>
-
     </div>
-  </div>
 
-  <!-- ==================== MODAL: SINCRONIZAÇÃO EM NUVEM (PARA OS 2 CELULARES) ==================== -->
-  <div id="syncModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 modal-backdrop hidden">
-    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-      
-      <div class="p-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-            <i data-lucide="cloud" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <h3 class="font-bold text-base">Sincronização do Casal</h3>
-            <p class="text-xs text-emerald-100">Como ver os gastos no celular dos dois</p>
-          </div>
+    <!-- ==================== MODAL: SINCRONIZAÇÃO EM NUVEM ==================== -->
+    <div id="syncModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 modal-backdrop hidden">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 p-4 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h3 class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="cloud" class="w-4 h-4 text-emerald-600"></i> Sincronização do Casal
+          </h3>
+          <button onclick="closeModal('syncModal')" class="text-slate-400 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
-        <button onclick="closeModal('syncModal')" class="text-white/80 hover:text-white p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
+
+        <div id="syncStatusDetails" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          Verificando servidor...
+        </div>
+
+        <p class="text-[11px] text-slate-500 leading-relaxed">
+          O aplicativo se comunica em segundo plano com o seu servidor no <b>Render</b>. Quando você lançar uma compra, o celular da sua esposa atualizará automaticamente!
+        </p>
+
+        <button onclick="closeModal('syncModal')" class="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md">
+          Entendi
         </button>
       </div>
-
-      <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto text-sm">
-        
-        <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-3">
-          <i data-lucide="smartphone" class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5"></i>
-          <div class="text-xs space-y-1">
-            <strong class="font-bold">Como funciona no Render ou na Web:</strong>
-            <p class="text-slate-600 leading-relaxed">
-              Quando você hospedar este projeto no <b>Render</b> (usando o <code class="bg-white px-1 py-0.5 rounded border">server.js</code> incluso), a sincronização acontece <b>automaticamente</b> pelo servidor! O que você lançar no seu celular aparece no celular da sua esposa na mesma hora.
-            </p>
-          </div>
-        </div>
-
-        <!-- Opção de Sincronização por API ou Firebase -->
-        <div class="space-y-3">
-          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Status Atual da Conexão</h4>
-          <div id="syncStatusDetails" class="p-3 rounded-xl bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700">
-            Verificando conexão...
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Como colocar no ar em 3 passos:</h4>
-          <ol class="text-xs text-slate-600 space-y-2 list-decimal list-inside bg-slate-50 p-3 rounded-2xl border border-slate-200">
-            <li>Suba os arquivos para o seu <b>GitHub</b>.</li>
-            <li>No <b>Render.com</b>, crie um novo <b>Web Service</b> e conecte ao seu repositório.</li>
-            <li>Pronto! Ele gerará um link (ex: <i>nosso-dinheiro.onrender.com</i>). Basta você e sua esposa salvarem na tela inicial do celular como um aplicativo!</li>
-          </ol>
-        </div>
-
-        <div class="pt-2">
-          <button onclick="closeModal('syncModal')" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition">
-            Entendi! Fechar
-          </button>
-        </div>
-
-      </div>
-
     </div>
+
   </div>
 
-  <!-- ==================== JAVASCRIPT DO SISTEMA ==================== -->
+  <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    /* ==========================================================================
-       ESTRUTURA DE DADOS & ESTADO GLOBAL
-       ========================================================================== */
     const STORAGE_KEY = 'casal_financas_db_v1';
 
     let appState = {
       selectedYear: new Date().getFullYear(),
-      selectedMonth: new Date().getMonth(), // 0 a 11
+      selectedMonth: new Date().getMonth(),
       couple: {
         p1Name: 'Marido',
         p2Name: 'Esposa'
       },
-      // Cartões de Crédito cadastrados
       cards: [
         { id: 'card_1', name: 'Nubank (Marido)', limit: 3000, closingDay: 10, dueDay: 17, owner: 'p1' },
         { id: 'card_2', name: 'Inter (Esposa)', limit: 2000, closingDay: 5, dueDay: 12, owner: 'p2' }
       ],
-      // Contas Fixas & Boletos & Empréstimos
       bills: [
         { id: 'bill_1', name: 'Aluguel do Mês', amount: 1200, dueDay: 10, type: 'bill', paidMonths: [] },
         { id: 'bill_2', name: 'Energia Elétrica', amount: 180, dueDay: 15, type: 'bill', paidMonths: [] },
         { id: 'bill_3', name: 'Internet Wi-Fi', amount: 100, dueDay: 20, type: 'bill', paidMonths: [] },
         { id: 'loan_1', name: 'Empréstimo Pessoal', amount: 350, dueDay: 5, type: 'loan', installmentsLeft: 5, totalRemaining: 1750, paidMonths: [] }
       ],
-      // Transações (Gastos e Receitas)
       transactions: [
         {
           id: 'tx_sample_1',
@@ -923,12 +747,8 @@
 
     let activePaymentType = 'pix';
     let coupleChartInstance = null;
-    let categoryChartInstance = null;
     let isServerConnected = false;
 
-    /* ==========================================================================
-       INICIALIZAÇÃO DA APLICAÇÃO
-       ========================================================================== */
     document.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
       loadLocalData();
@@ -936,12 +756,10 @@
       updateMonthDisplay();
       renderAll();
 
-      // Configura input de data com a data de hoje por padrão
       const today = new Date().toISOString().split('T')[0];
       const txDateInput = document.getElementById('txDate');
       if (txDateInput) txDateInput.value = today;
 
-      // Listeners para filtros
       document.getElementById('txSearchInput')?.addEventListener('input', renderTransactionsList);
       document.getElementById('txFilterPerson')?.addEventListener('change', renderTransactionsList);
       document.getElementById('txFilterMethod')?.addEventListener('change', renderTransactionsList);
@@ -949,7 +767,7 @@
       document.getElementById('prevMonthBtn')?.addEventListener('click', () => changeMonth(-1));
       document.getElementById('nextMonthBtn')?.addEventListener('click', () => changeMonth(1));
 
-      // Sincronização em segundo plano a cada 8 segundos para atualizar se o cônjuge lançar no outro celular
+      // Sincronização periódica a cada 8s para refletir compras feitas no outro celular
       setInterval(async () => {
         if (isServerConnected) {
           try {
@@ -957,7 +775,6 @@
             if (res.ok) {
               const remote = await res.json();
               if (remote && remote.transactions) {
-                // Se o conteúdo mudou, atualiza a tela suavemente
                 if (JSON.stringify(remote.transactions) !== JSON.stringify(appState.transactions) ||
                     JSON.stringify(remote.bills) !== JSON.stringify(appState.bills) ||
                     JSON.stringify(remote.cards) !== JSON.stringify(appState.cards)) {
@@ -966,38 +783,27 @@
                 }
               }
             }
-          } catch(e) {
-            // Silencioso
-          }
+          } catch(e) {}
         }
       }, 8000);
     });
 
-    /* ==========================================================================
-       PERSISTÊNCIA (LOCALSTORAGE & API REST DO RENDER)
-       ========================================================================== */
     function loadLocalData() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-          const parsed = JSON.parse(saved);
-          appState = { ...appState, ...parsed };
+          appState = { ...appState, ...JSON.parse(saved) };
         }
-      } catch (e) {
-        console.error('Erro ao ler do LocalStorage:', e);
-      }
+      } catch (e) {}
     }
 
     function saveState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-        // Se houver backend Node.js rodando no Render, envia atualização para sincronizar outros aparelhos
         if (isServerConnected) {
           syncWithBackend();
         }
-      } catch (e) {
-        console.error('Erro ao salvar no LocalStorage:', e);
-      }
+      } catch (e) {}
     }
 
     async function checkServerApi() {
@@ -1008,15 +814,13 @@
           if (remoteData && remoteData.transactions) {
             appState = remoteData;
             isServerConnected = true;
-            updateSyncBadge(true, 'Conectado ao Servidor Render (Sincronizado em Tempo Real)');
+            updateSyncBadge(true);
             return;
           }
         }
-      } catch (err) {
-        // Sem backend ou modo estático
-      }
+      } catch (err) {}
       isServerConnected = false;
-      updateSyncBadge(false, 'Modo Local / Armazenado no Celular');
+      updateSyncBadge(false);
     }
 
     async function syncWithBackend() {
@@ -1026,42 +830,37 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(appState)
         });
-      } catch (e) {
-        console.warn('Erro ao sincronizar com backend:', e);
-      }
+      } catch (e) {}
     }
 
-    function updateSyncBadge(online, text) {
+    function updateSyncBadge(online) {
       const dot = document.getElementById('syncStatusDot');
       const details = document.getElementById('syncStatusDetails');
       if (dot) {
         dot.className = online 
-          ? 'absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse'
-          : 'absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500';
+          ? 'absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 animate-pulse'
+          : 'absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400';
       }
       if (details) {
         details.innerHTML = online 
-          ? `<div class="flex items-center gap-2 text-emerald-700 font-bold"><i data-lucide="check-circle" class="w-4 h-4"></i> Servidor Render Conectado! O que você lançar aqui aparece no outro celular na mesma hora.</div>`
-          : `<div class="flex items-center gap-2 text-slate-700"><i data-lucide="info" class="w-4 h-4 text-amber-500"></i> Rodando no modo LocalStorage. Para sincronizar ao vivo nos dois celulares, publique no Render com o servidor Node.js ou use a opção de backup.</div>`;
+          ? `<div class="text-emerald-700 font-bold flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Conectado ao Render! Sincronização em tempo real ativada.</div>`
+          : `<div class="text-slate-600 flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-amber-500"></i> Modo Local (Armazenado neste aparelho).</div>`;
         lucide.createIcons();
       }
     }
 
-    /* ==========================================================================
-       NAVEGAÇÃO POR ABAS & MESES
-       ========================================================================== */
     function switchTab(tabName) {
       const tabs = ['dashboard', 'transactions', 'cards', 'bills'];
       tabs.forEach(tab => {
         const section = document.getElementById(`tab-${tab}`);
-        const btn = document.getElementById(`tab-btn-${tab}`);
+        const btn = document.getElementById(`nav-btn-${tab}`);
         if (section && btn) {
           if (tab === tabName) {
             section.classList.remove('hidden');
-            btn.className = 'tab-btn py-2.5 px-3 border-b-2 font-bold text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap border-emerald-600 text-emerald-600';
+            btn.className = 'flex-1 py-1 flex flex-col items-center justify-center text-emerald-600 font-bold transition';
           } else {
             section.classList.add('hidden');
-            btn.className = 'tab-btn py-2.5 px-3 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap border-transparent text-slate-500 hover:text-slate-800';
+            btn.className = 'flex-1 py-1 flex flex-col items-center justify-center text-slate-400 hover:text-slate-700 transition font-medium';
           }
         }
       });
@@ -1097,34 +896,23 @@
       return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    /* ==========================================================================
-       CÁLCULOS PRINCIPAIS ("O QUE AINDA TEMOS E PODEMOS GASTAR")
-       ========================================================================== */
     function calculateFinancials() {
       const targetMonthStr = `${appState.selectedYear}-${String(appState.selectedMonth + 1).padStart(2, '0')}`;
 
-      // 1. Entradas / Salário do mês selecionado
       let totalIncome = 0;
-      // 2. Gastos no Pix / Débito / Dinheiro (saída imediata de caixa)
       let totalPixDebit = 0;
-      // 3. Gastos no Cartão de Crédito
       let totalCreditCards = 0;
-      // 4. Totais por pessoa
       let p1Expenses = 0;
       let p2Expenses = 0;
-
-      // Categorias agregadas
       const categoryMap = {};
 
       appState.transactions.forEach(tx => {
         if (!tx.date || !tx.date.startsWith(targetMonthStr)) return;
-
         const val = parseFloat(tx.amount) || 0;
 
         if (tx.type === 'income') {
           totalIncome += val;
         } else {
-          // Despesa
           if (tx.method === 'card') {
             totalCreditCards += val;
           } else {
@@ -1142,7 +930,6 @@
         }
       });
 
-      // 5. Contas Fixas e Empréstimos do Mês
       let totalBills = 0;
       let totalBillsPending = 0;
       let totalBillsPaid = 0;
@@ -1158,12 +945,9 @@
         }
       });
 
-      // 6. TOTAL DISPONÍVEL REAL PARA GASTAR
-      // Fórmula de Ouro para o Casal:
-      // Saldo Livre = Renda Total - Contas Fixas - Fatura dos Cartões - Gastos já feitos em Pix/Dinheiro
+      // Saldo Livre Real = Renda - Contas Fixas - Cartões - Gastos já feitos em Pix/Dinheiro
       const availableToSpend = totalIncome - totalBills - totalCreditCards - totalPixDebit;
 
-      // 7. Cálculo de dias restantes até o fim do mês corrente
       const now = new Date();
       const isCurrentViewingMonth = (now.getFullYear() === appState.selectedYear && now.getMonth() === appState.selectedMonth);
       let daysRemaining = 1;
@@ -1197,14 +981,10 @@
       };
     }
 
-    /* ==========================================================================
-       RENDERIZAÇÃO COMPLETA DA TELA
-       ========================================================================== */
     function renderAll() {
       updateCoupleNamesInUI();
       const stats = calculateFinancials();
 
-      // Atualiza Hero Card
       const heroAvailable = document.getElementById('heroAvailableToSpend');
       const heroAdvice = document.getElementById('heroAdviceText');
       const heroDaily = document.getElementById('heroDailyLimit');
@@ -1215,50 +995,46 @@
       if (heroAvailable) {
         heroAvailable.innerText = formatMoney(stats.availableToSpend);
         if (stats.availableToSpend < 0) {
-          heroAvailable.parentElement.classList.add('text-rose-400');
-          heroAvailable.parentElement.classList.remove('text-white');
+          heroAvailable.className = 'text-3xl font-black tracking-tight text-rose-400 leading-none';
         } else {
-          heroAvailable.parentElement.classList.add('text-white');
-          heroAvailable.parentElement.classList.remove('text-rose-400');
+          heroAvailable.className = 'text-3xl font-black tracking-tight text-white leading-none';
         }
       }
 
       if (heroAdvice) {
         if (stats.availableToSpend > 0) {
-          heroAdvice.innerText = `Vocês estão no azul! Já descontamos todas as contas fixas, empréstimos e faturas de cartão. Sobram R$ ${formatMoney(stats.availableToSpend)} livres.`;
+          heroAdvice.innerText = `Tudo no controle! Sobram R$ ${formatMoney(stats.availableToSpend)} livres após contas e cartões.`;
         } else if (stats.availableToSpend === 0 && stats.totalIncome === 0) {
-          heroAdvice.innerText = 'Cadastre o salário ou entradas deste mês para ver a projeção do que ainda podem gastar.';
+          heroAdvice.innerText = 'Cadastre o salário deste mês para ver o limite disponível.';
         } else {
-          heroAdvice.innerText = `Atenção: Os gastos e contas superaram a renda em R$ ${formatMoney(Math.abs(stats.availableToSpend))}. Segurem despesas não essenciais!`;
+          heroAdvice.innerText = `Atenção: Gastos superaram a renda em R$ ${formatMoney(Math.abs(stats.availableToSpend))}.`;
         }
       }
 
       if (heroDaily) {
-        heroDaily.innerHTML = `R$ ${formatMoney(stats.dailySafeLimit)} <span class="text-xs font-normal text-slate-300">/ dia</span>`;
+        heroDaily.innerHTML = `R$ ${formatMoney(stats.dailySafeLimit)} <span class="text-[10px] font-normal text-slate-300">/ dia</span>`;
       }
       if (heroDays) {
-        heroDays.innerText = `Restam ${stats.daysRemaining} dias no mês para administrar este valor.`;
+        heroDays.innerText = `Restam ${stats.daysRemaining} dias`;
       }
 
       if (progBar && progPercent) {
-        progPercent.innerText = `${stats.committedPercent}%`;
+        progPercent.innerText = `${stats.committedPercent}% da renda`;
         progBar.style.width = `${stats.committedPercent}%`;
         if (stats.committedPercent > 90) {
-          progBar.className = 'bg-rose-500 h-1.5 rounded-full transition-all duration-500';
+          progBar.className = 'bg-rose-500 h-1.5 rounded-full';
         } else if (stats.committedPercent > 75) {
-          progBar.className = 'bg-amber-400 h-1.5 rounded-full transition-all duration-500';
+          progBar.className = 'bg-amber-400 h-1.5 rounded-full';
         } else {
-          progBar.className = 'bg-gradient-to-r from-emerald-400 to-teal-300 h-1.5 rounded-full transition-all duration-500';
+          progBar.className = 'bg-gradient-to-r from-emerald-400 to-teal-300 h-1.5 rounded-full';
         }
       }
 
-      // Atualiza 4 Cards
       document.getElementById('statIncome').innerText = `R$ ${formatMoney(stats.totalIncome)}`;
       document.getElementById('statCreditCards').innerText = `R$ ${formatMoney(stats.totalCreditCards)}`;
       document.getElementById('statPixDebit').innerText = `R$ ${formatMoney(stats.totalPixDebit)}`;
       document.getElementById('statBillsPending').innerText = `R$ ${formatMoney(stats.totalBillsPending)}`;
 
-      // Renderiza Listas e Gráficos
       renderRecentTransactions();
       renderTransactionsList();
       renderCardsList();
@@ -1272,27 +1048,17 @@
       const p1 = appState.couple.p1Name || 'Marido';
       const p2 = appState.couple.p2Name || 'Esposa';
 
-      const txLabel1 = document.getElementById('txLabelPerson1');
-      const txLabel2 = document.getElementById('txLabelPerson2');
-      const cardLabel1 = document.getElementById('cardLabelPerson1');
-      const cardLabel2 = document.getElementById('cardLabelPerson2');
-      const filterP1 = document.getElementById('filterOptionP1');
-      const filterP2 = document.getElementById('filterOptionP2');
-      const chartP1 = document.getElementById('chartPerson1Name');
-      const chartP2 = document.getElementById('chartPerson2Name');
-      const setLbl1 = document.getElementById('settingLabelP1');
-      const setLbl2 = document.getElementById('settingLabelP2');
-
-      if (txLabel1) txLabel1.innerText = p1;
-      if (txLabel2) txLabel2.innerText = p2;
-      if (cardLabel1) cardLabel1.innerText = p1;
-      if (cardLabel2) cardLabel2.innerText = p2;
-      if (filterP1) filterP1.innerText = p1;
-      if (filterP2) filterP2.innerText = p2;
-      if (chartP1) chartP1.innerText = p1;
-      if (chartP2) chartP2.innerText = p2;
-      if (setLbl1) setLbl1.innerText = p1;
-      if (setLbl2) setLbl2.innerText = p2;
+      document.getElementById('subHeaderNames').innerText = `${p1} & ${p2}`;
+      document.getElementById('txLabelPerson1').innerText = p1;
+      document.getElementById('txLabelPerson2').innerText = p2;
+      document.getElementById('cardLabelPerson1').innerText = p1;
+      document.getElementById('cardLabelPerson2').innerText = p2;
+      document.getElementById('filterOptionP1').innerText = p1;
+      document.getElementById('filterOptionP2').innerText = p2;
+      document.getElementById('chartPerson1Name').innerText = p1;
+      document.getElementById('chartPerson2Name').innerText = p2;
+      document.getElementById('settingLabelP1').innerText = p1;
+      document.getElementById('settingLabelP2').innerText = p2;
 
       const setP1 = document.getElementById('settingP1Name');
       const setP2 = document.getElementById('settingP2Name');
@@ -1304,13 +1070,9 @@
       if (radio) radio.checked = true;
     }
 
-    /* ==========================================================================
-       GRÁFICOS (CHART.JS)
-       ========================================================================== */
     function renderCharts(stats) {
       if (!stats) stats = calculateFinancials();
 
-      // 1. Gráfico Divisão do Casal (Doughnut)
       const ctxCouple = document.getElementById('coupleChart')?.getContext('2d');
       if (ctxCouple) {
         if (coupleChartInstance) coupleChartInstance.destroy();
@@ -1336,92 +1098,36 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '70%',
+            cutout: '72%',
             plugins: {
               legend: { display: false },
-              tooltip: {
-                enabled: hasExpenses,
-                callbacks: {
-                  label: function(ctx) {
-                    return ` R$ ${formatMoney(ctx.raw)}`;
-                  }
-                }
-              }
+              tooltip: { enabled: hasExpenses }
             }
           }
         });
       }
 
-      // 2. Gráfico de Categorias
-      const ctxCat = document.getElementById('categoryChart')?.getContext('2d');
+      // Categorias em lista compacta
       const legendList = document.getElementById('categoryLegendList');
-
-      if (ctxCat) {
-        if (categoryChartInstance) categoryChartInstance.destroy();
-
+      if (legendList) {
         const catKeys = Object.keys(stats.categoryMap);
         const catValues = Object.values(stats.categoryMap);
-        const hasCats = catKeys.length > 0;
-
-        const colors = [
-          '#10b981', '#3b82f6', '#f59e0b', '#ec4899', 
-          '#8b5cf6', '#06b6d4', '#f43f5e', '#64748b'
-        ];
-
-        if (legendList) {
-          if (!hasCats) {
-            legendList.innerHTML = `<p class="text-slate-400 text-center py-6">Nenhum gasto registrado neste mês.</p>`;
-          } else {
-            legendList.innerHTML = catKeys.map((cat, idx) => {
-              const val = catValues[idx];
-              const color = colors[idx % colors.length];
-              return `
-                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-                  <span class="flex items-center gap-2 text-slate-700 font-medium truncate">
-                    <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${color}"></span>
-                    ${cat}
-                  </span>
-                  <span class="font-bold text-slate-900 shrink-0">R$ ${formatMoney(val)}</span>
-                </div>
-              `;
-            }).join('');
-          }
+        if (catKeys.length === 0) {
+          legendList.innerHTML = `<p class="text-slate-400 text-center py-3 text-xs">Nenhum gasto registrado neste mês.</p>`;
+        } else {
+          legendList.innerHTML = catKeys.map((cat, idx) => {
+            const val = catValues[idx];
+            return `
+              <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                <span class="font-medium text-slate-700 truncate">${cat}</span>
+                <span class="font-bold text-slate-900 shrink-0">R$ ${formatMoney(val)}</span>
+              </div>
+            `;
+          }).join('');
         }
-
-        categoryChartInstance = new Chart(ctxCat, {
-          type: 'doughnut',
-          data: {
-            labels: hasCats ? catKeys : ['Sem dados'],
-            datasets: [{
-              data: hasCats ? catValues : [1],
-              backgroundColor: hasCats ? colors.slice(0, catKeys.length) : ['#e2e8f0'],
-              borderWidth: 2,
-              borderColor: '#ffffff'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                enabled: hasCats,
-                callbacks: {
-                  label: function(ctx) {
-                    return ` R$ ${formatMoney(ctx.raw)}`;
-                  }
-                }
-              }
-            }
-          }
-        });
       }
     }
 
-    /* ==========================================================================
-       LISTAS: RECENTES & EXTRATO COMPLETO
-       ========================================================================== */
     function getFilteredTransactions() {
       const targetMonthStr = `${appState.selectedYear}-${String(appState.selectedMonth + 1).padStart(2, '0')}`;
       const search = (document.getElementById('txSearchInput')?.value || '').toLowerCase().trim();
@@ -1446,13 +1152,12 @@
     function renderRecentTransactions() {
       const container = document.getElementById('dashboardRecentList');
       if (!container) return;
-
-      const txs = getFilteredTransactions().slice(0, 5);
+      const txs = getFilteredTransactions().slice(0, 4);
 
       if (txs.length === 0) {
         container.innerHTML = `
-          <div class="py-8 text-center text-slate-400 text-sm">
-            Nenhum lançamento no mês selecionado. Clique em <b>"Novo Gasto"</b> para começar!
+          <div class="py-6 text-center text-slate-400 text-xs">
+            Nenhum lançamento no mês. Toque no botão <b>"+"</b> abaixo para lançar!
           </div>
         `;
         return;
@@ -1466,21 +1171,16 @@
       const container = document.getElementById('transactionsFullList');
       const countEl = document.getElementById('txTotalFilteredCount');
       if (!container) return;
-
       const txs = getFilteredTransactions();
 
-      if (countEl) {
-        countEl.innerText = `${txs.length} ${txs.length === 1 ? 'lançamento' : 'lançamentos'}`;
-      }
+      if (countEl) countEl.innerText = `${txs.length} itens`;
 
       if (txs.length === 0) {
         container.innerHTML = `
-          <div class="p-12 text-center text-slate-400 text-sm space-y-2">
-            <i data-lucide="receipt" class="w-8 h-8 mx-auto text-slate-300"></i>
-            <p>Nenhuma movimentação encontrada com estes filtros.</p>
+          <div class="p-8 text-center text-slate-400 text-xs">
+            Nenhuma movimentação encontrada.
           </div>
         `;
-        lucide.createIcons();
         return;
       }
 
@@ -1491,49 +1191,42 @@
     function renderTransactionItemHTML(tx, showActions = true) {
       const isIncome = tx.type === 'income';
       const personName = tx.person === 'p2' ? appState.couple.p2Name : appState.couple.p1Name;
-      const personBadgeClass = tx.person === 'p2' ? 'bg-pink-100 text-pink-700 border-pink-200' : 'bg-blue-100 text-blue-700 border-blue-200';
+      const personBadgeClass = tx.person === 'p2' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700';
 
-      let methodBadge = '';
+      let methodText = 'Pix';
       if (tx.method === 'card') {
         const cardObj = appState.cards.find(c => c.id === tx.cardId);
-        const cardName = cardObj ? cardObj.name : 'Cartão de Crédito';
-        methodBadge = `<span class="px-2 py-0.5 rounded-md bg-purple-100 text-purple-700 text-[11px] font-semibold flex items-center gap-1"><i data-lucide="credit-card" class="w-3 h-3"></i> ${cardName}</span>`;
-      } else if (tx.method === 'pix') {
-        methodBadge = `<span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-[11px] font-semibold flex items-center gap-1"><i data-lucide="zap" class="w-3 h-3"></i> Pix</span>`;
-      } else {
-        methodBadge = `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-semibold flex items-center gap-1"><i data-lucide="banknote" class="w-3 h-3"></i> Dinheiro / Débito</span>`;
+        methodText = cardObj ? cardObj.name : 'Cartão';
+      } else if (tx.method === 'debit') {
+        methodText = 'Dinheiro';
       }
 
       const formattedDate = tx.date ? tx.date.split('-').reverse().slice(0, 2).join('/') : '';
 
       return `
-        <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition group">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">
-              <i data-lucide="${isIncome ? 'arrow-down-left' : 'shopping-bag'}" class="w-5 h-5"></i>
+        <div class="p-3 flex items-center justify-between hover:bg-slate-50 transition">
+          <div class="flex items-center gap-2.5 min-w-0 pr-2">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">
+              <i data-lucide="${isIncome ? 'arrow-down-left' : 'shopping-bag'}" class="w-4 h-4"></i>
             </div>
-            <div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="font-bold text-slate-900 text-sm">${escapeHTML(tx.description)}</span>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${personBadgeClass}">${escapeHTML(personName)}</span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-bold text-slate-900 text-xs truncate max-w-[140px]">${escapeHTML(tx.description)}</span>
+                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full ${personBadgeClass}">${escapeHTML(personName)}</span>
               </div>
-              <div class="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
-                <span>${formattedDate}</span>
-                <span>•</span>
-                <span>${escapeHTML(tx.category || 'Geral')}</span>
-                <span>•</span>
-                ${methodBadge}
+              <div class="text-[10px] text-slate-400 truncate mt-0.5">
+                ${formattedDate} • ${escapeHTML(tx.category || 'Geral')} • ${escapeHTML(methodText)}
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-3">
-            <span class="font-extrabold text-sm sm:text-base ${isIncome ? 'text-emerald-600' : 'text-slate-900'}">
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="font-extrabold text-xs sm:text-sm ${isIncome ? 'text-emerald-600' : 'text-slate-900'}">
               ${isIncome ? '+' : '-'} R$ ${formatMoney(tx.amount)}
             </span>
             ${showActions ? `
-              <button onclick="deleteTransaction('${tx.id}')" title="Excluir lançamento" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              <button onclick="deleteTransaction('${tx.id}')" class="p-1 text-slate-300 hover:text-rose-600">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             ` : ''}
           </div>
@@ -1541,21 +1234,13 @@
       `;
     }
 
-    /* ==========================================================================
-       GESTÃO DE CARTÕES DE CRÉDITO
-       ========================================================================== */
     function renderCardsList() {
       const grid = document.getElementById('cardsListGrid');
       const totalDueEl = document.getElementById('totalCardsDueAmount');
-      const totalLimitEl = document.getElementById('totalCardsLimitAmount');
       const targetMonthStr = `${appState.selectedYear}-${String(appState.selectedMonth + 1).padStart(2, '0')}`;
-
       if (!grid) return;
 
       let sumFaturas = 0;
-      let sumLimites = 0;
-
-      // Popula também o select de cartões do modal
       const txCardSelect = document.getElementById('txCardId');
       if (txCardSelect) {
         txCardSelect.innerHTML = appState.cards.map(c => `<option value="${c.id}">${escapeHTML(c.name)}</option>`).join('');
@@ -1563,88 +1248,62 @@
 
       if (appState.cards.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-sm">
-            Nenhum cartão cadastrado ainda. Clique em <b>"Novo Cartão"</b> para adicionar Nubank, Inter, etc.!
+          <div class="p-6 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-xs">
+            Nenhum cartão cadastrado ainda.
           </div>
         `;
         if (totalDueEl) totalDueEl.innerText = 'R$ 0,00';
-        if (totalLimitEl) totalLimitEl.innerText = 'R$ 0,00';
         return;
       }
 
       grid.innerHTML = appState.cards.map(card => {
-        // Soma gastos deste cartão no mês corrente
         const cardSpent = appState.transactions
           .filter(tx => tx.type === 'expense' && tx.method === 'card' && tx.cardId === card.id && tx.date.startsWith(targetMonthStr))
           .reduce((acc, cur) => acc + (parseFloat(cur.amount) || 0), 0);
 
         sumFaturas += cardSpent;
-        sumLimites += (parseFloat(card.limit) || 0);
-
         const limitAvailable = Math.max(0, (card.limit || 0) - cardSpent);
         const percentUsed = card.limit > 0 ? Math.min(100, Math.round((cardSpent / card.limit) * 100)) : 0;
         const ownerName = card.owner === 'p2' ? appState.couple.p2Name : appState.couple.p1Name;
 
         return `
-          <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm relative overflow-hidden flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
-                    <i data-lucide="credit-card" class="w-4 h-4"></i>
-                  </div>
-                  <div>
-                    <h4 class="font-bold text-slate-900 text-sm leading-tight">${escapeHTML(card.name)}</h4>
-                    <span class="text-[11px] text-slate-400">Cartão de ${escapeHTML(ownerName)}</span>
-                  </div>
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <i data-lucide="credit-card" class="w-4 h-4"></i>
                 </div>
-                <button onclick="deleteCard('${card.id}')" title="Excluir cartão" class="text-slate-300 hover:text-rose-500 p-1">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              </div>
-
-              <!-- Fatura Atual -->
-              <div class="my-3 p-3 rounded-xl bg-purple-50/60 border border-purple-100">
-                <span class="text-xs text-purple-700 font-medium block">Fatura Atual (${appState.selectedMonth + 1}/${appState.selectedYear}):</span>
-                <span class="text-xl font-black text-purple-900">R$ ${formatMoney(cardSpent)}</span>
-              </div>
-
-              <!-- Datas de fechamento e vencimento -->
-              <div class="grid grid-cols-2 gap-2 text-xs text-slate-500 mb-3">
-                <div class="bg-slate-50 p-2 rounded-lg">
-                  <span class="text-[10px] text-slate-400 block uppercase">Fecha dia</span>
-                  <span class="font-bold text-slate-700">${card.closingDay || '--'}</span>
-                </div>
-                <div class="bg-slate-50 p-2 rounded-lg">
-                  <span class="text-[10px] text-slate-400 block uppercase">Vence dia</span>
-                  <span class="font-bold text-slate-700">${card.dueDay || '--'}</span>
+                <div>
+                  <h4 class="font-bold text-slate-900 text-xs">${escapeHTML(card.name)}</h4>
+                  <span class="text-[10px] text-slate-400">Cartão de ${escapeHTML(ownerName)}</span>
                 </div>
               </div>
+              <button onclick="deleteCard('${card.id}')" class="text-slate-300 hover:text-rose-500 p-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
             </div>
 
-            <!-- Limite e Progresso -->
-            <div class="pt-2 border-t border-slate-100">
-              <div class="flex justify-between text-xs mb-1">
-                <span class="text-slate-400">Limite Disp: <b>R$ ${formatMoney(limitAvailable)}</b></span>
-                <span class="text-slate-500 font-bold">${percentUsed}%</span>
-              </div>
-              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div class="bg-purple-600 h-2 rounded-full" style="width: ${percentUsed}%"></div>
-              </div>
+            <div class="p-2.5 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-between">
+              <span class="text-xs text-purple-800 font-bold">Fatura Atual:</span>
+              <span class="text-base font-black text-purple-900">R$ ${formatMoney(cardSpent)}</span>
+            </div>
+
+            <div class="flex justify-between text-[11px] text-slate-500">
+              <span>Fecha dia <b>${card.closingDay || '--'}</b> • Vence dia <b>${card.dueDay || '--'}</b></span>
+              <span>Disp: <b>R$ ${formatMoney(limitAvailable)}</b></span>
+            </div>
+
+            <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-purple-600 h-1.5 rounded-full" style="width: ${percentUsed}%"></div>
             </div>
           </div>
         `;
       }).join('');
 
       if (totalDueEl) totalDueEl.innerText = `R$ ${formatMoney(sumFaturas)}`;
-      if (totalLimitEl) totalLimitEl.innerText = `R$ ${formatMoney(sumLimites)}`;
-
       lucide.createIcons();
     }
 
-    /* ==========================================================================
-       GESTÃO DE CONTAS FIXAS & EMPRÉSTIMOS
-       ========================================================================== */
     function renderBillsList() {
       const fixedContainer = document.getElementById('fixedBillsList');
       const loansContainer = document.getElementById('loansListGrid');
@@ -1653,33 +1312,28 @@
       const fixedBills = appState.bills.filter(b => b.type !== 'loan');
       const loanBills = appState.bills.filter(b => b.type === 'loan');
 
-      // 1. Contas Fixas
       if (fixedContainer) {
         if (fixedBills.length === 0) {
-          fixedContainer.innerHTML = `
-            <div class="p-8 text-center text-slate-400 text-sm">
-              Nenhuma conta fixa cadastrada. Adicione luz, aluguel, internet, etc.!
-            </div>
-          `;
+          fixedContainer.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">Nenhuma conta fixa cadastrada.</div>`;
         } else {
           fixedContainer.innerHTML = fixedBills.map(bill => {
             const isPaid = (bill.paidMonths || []).includes(targetMonthStr);
             return `
-              <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition">
-                <div class="flex items-center gap-3">
-                  <button onclick="toggleBillPaid('${bill.id}')" title="${isPaid ? 'Marcar como não pago' : 'Marcar como pago'}" 
-                    class="w-7 h-7 rounded-lg border flex items-center justify-center transition ${isPaid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 text-transparent hover:border-emerald-500'}">
-                    <i data-lucide="check" class="w-4 h-4"></i>
+              <div class="p-3 flex items-center justify-between hover:bg-slate-50 transition">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <button onclick="toggleBillPaid('${bill.id}')" 
+                    class="w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition ${isPaid ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 text-transparent'}">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
                   </button>
-                  <div>
-                    <h4 class="font-bold text-slate-800 text-sm ${isPaid ? 'line-through text-slate-400' : ''}">${escapeHTML(bill.name)}</h4>
-                    <span class="text-xs text-slate-400">Vence dia ${bill.dueDay} • ${isPaid ? '<span class="text-emerald-600 font-semibold">Pago</span>' : '<span class="text-amber-600 font-semibold">Pendente</span>'}</span>
+                  <div class="min-w-0">
+                    <h4 class="font-bold text-slate-800 text-xs truncate ${isPaid ? 'line-through text-slate-400' : ''}">${escapeHTML(bill.name)}</h4>
+                    <span class="text-[10px] text-slate-400">Vence dia ${bill.dueDay} • ${isPaid ? '<b class="text-emerald-600">Pago</b>' : '<b class="text-amber-600">Pendente</b>'}</span>
                   </div>
                 </div>
-                <div class="flex items-center gap-3">
-                  <span class="font-bold text-sm text-slate-900">R$ ${formatMoney(bill.amount)}</span>
-                  <button onclick="deleteBill('${bill.id}')" title="Excluir conta" class="p-1 text-slate-300 hover:text-rose-500">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="font-bold text-xs text-slate-900">R$ ${formatMoney(bill.amount)}</span>
+                  <button onclick="deleteBill('${bill.id}')" class="text-slate-300 hover:text-rose-500 p-1">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                   </button>
                 </div>
               </div>
@@ -1688,55 +1342,30 @@
         }
       }
 
-      // 2. Empréstimos & Dívidas
       if (loansContainer) {
         if (loanBills.length === 0) {
-          loansContainer.innerHTML = `
-            <div class="col-span-full p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-sm">
-              Nenhum dinheiro emprestado ou dívida cadastrada. Ótimo sinal! Se houver algum, clique em <b>"Novo Empréstimo"</b>.
-            </div>
-          `;
+          loansContainer.innerHTML = `<div class="p-4 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-xs">Nenhum empréstimo cadastrado.</div>`;
         } else {
           loansContainer.innerHTML = loanBills.map(loan => {
             const isPaidThisMonth = (loan.paidMonths || []).includes(targetMonthStr);
             return `
-              <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
-                <div>
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">
-                      Empréstimo
-                    </span>
-                    <button onclick="deleteBill('${loan.id}')" title="Excluir empréstimo" class="text-slate-300 hover:text-rose-500 p-1">
-                      <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                  </div>
-                  <h4 class="font-bold text-slate-900 text-base">${escapeHTML(loan.name)}</h4>
-                  <div class="my-2 flex items-baseline gap-1">
-                    <span class="text-xs text-slate-400">Parcela mensal:</span>
-                    <span class="text-lg font-black text-indigo-600">R$ ${formatMoney(loan.amount)}</span>
-                  </div>
-                  <p class="text-xs text-slate-500">Vencimento: todo dia ${loan.dueDay}</p>
-
-                  <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-xs">
-                    <div>
-                      <span class="text-slate-400 block text-[10px] uppercase">Parcelas Restantes</span>
-                      <span class="font-bold text-slate-800">${loan.installmentsLeft || '--'} meses</span>
-                    </div>
-                    <div>
-                      <span class="text-slate-400 block text-[10px] uppercase">Saldo Total Devedor</span>
-                      <span class="font-bold text-slate-800">R$ ${formatMoney(loan.totalRemaining)}</span>
-                    </div>
-                  </div>
+              <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">Empréstimo</span>
+                  <button onclick="deleteBill('${loan.id}')" class="text-slate-300 hover:text-rose-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 </div>
-
-                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span class="text-xs ${isPaidThisMonth ? 'text-emerald-600 font-bold' : 'text-amber-600 font-semibold'}">
-                    ${isPaidThisMonth ? 'Parcela deste mês Paga' : 'Parcela do mês Pendente'}
-                  </span>
-                  <button onclick="toggleBillPaid('${loan.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition ${isPaidThisMonth ? 'bg-slate-100 text-slate-600' : 'bg-emerald-600 text-white shadow-sm'}">
-                    ${isPaidThisMonth ? 'Desmarcar' : 'Pagar Parcela'}
-                  </button>
+                <h4 class="font-bold text-slate-900 text-xs">${escapeHTML(loan.name)}</h4>
+                <div class="flex items-baseline justify-between">
+                  <span class="text-xs text-slate-400">Parcela:</span>
+                  <span class="text-base font-black text-indigo-600">R$ ${formatMoney(loan.amount)}</span>
                 </div>
+                <div class="flex justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
+                  <span>Faltam: <b>${loan.installmentsLeft || '--'} meses</b></span>
+                  <span>Saldo: <b>R$ ${formatMoney(loan.totalRemaining)}</b></span>
+                </div>
+                <button onclick="toggleBillPaid('${loan.id}')" class="w-full py-1.5 rounded-xl text-xs font-bold transition ${isPaidThisMonth ? 'bg-slate-100 text-slate-600' : 'bg-emerald-600 text-white shadow-sm'}">
+                  ${isPaidThisMonth ? 'Parcela deste mês Paga' : 'Marcar Parcela como Paga'}
+                </button>
               </div>
             `;
           }).join('');
@@ -1746,18 +1375,15 @@
       lucide.createIcons();
     }
 
-    /* ==========================================================================
-       AÇÕES E SUBMISSÃO DE FORMULÁRIOS
-       ========================================================================== */
     function setPaymentType(type) {
       activePaymentType = type;
       ['pix', 'card', 'debit'].forEach(m => {
         const btn = document.getElementById(`btnMethod${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (btn) {
           if (m === type) {
-            btn.className = 'method-btn p-2 rounded-xl border text-xs font-bold border-emerald-500 bg-emerald-50 text-emerald-800 flex flex-col items-center gap-1';
+            btn.className = 'method-btn p-2 rounded-xl border text-[11px] font-bold border-emerald-500 bg-emerald-50 text-emerald-800 flex flex-col items-center gap-1';
           } else {
-            btn.className = 'method-btn p-2 rounded-xl border text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 flex flex-col items-center gap-1';
+            btn.className = 'method-btn p-2 rounded-xl border text-[11px] font-bold border-slate-200 text-slate-600 flex flex-col items-center gap-1';
           }
         }
       });
@@ -1784,25 +1410,23 @@
       typeInput.value = type;
 
       if (type === 'income') {
-        header.className = 'p-5 bg-emerald-600 text-white flex items-center justify-between';
-        title.innerText = 'Registrar Nova Receita / Salário';
-        iconBox.innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5"></i>';
-        submitBtn.className = 'flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition';
+        header.className = 'p-4 bg-emerald-600 text-white flex items-center justify-between shrink-0';
+        title.innerText = 'Registrar Salário / Receita';
+        iconBox.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i>';
+        submitBtn.className = 'flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-md';
         if (paySection) paySection.classList.add('hidden');
       } else {
-        header.className = 'p-5 bg-rose-600 text-white flex items-center justify-between';
+        header.className = 'p-4 bg-rose-600 text-white flex items-center justify-between shrink-0';
         title.innerText = 'Registrar Novo Gasto';
-        iconBox.innerHTML = '<i data-lucide="minus-circle" class="w-5 h-5"></i>';
-        submitBtn.className = 'flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md transition';
+        iconBox.innerHTML = '<i data-lucide="minus-circle" class="w-4 h-4"></i>';
+        submitBtn.className = 'flex-1 py-2.5 rounded-xl bg-rose-600 text-white font-bold text-xs shadow-md';
         if (paySection) paySection.classList.remove('hidden');
       }
 
-      // Limpa campos
       document.getElementById('txAmount').value = '';
       document.getElementById('txDescription').value = '';
       setPaymentType('pix');
 
-      // Seleciona automaticamente o perfil configurado para este aparelho
       const deviceProfile = localStorage.getItem('casal_meu_perfil') || 'p1';
       const personRadio = document.querySelector(`input[name="txPerson"][value="${deviceProfile}"]`);
       if (personRadio) personRadio.checked = true;
@@ -1824,7 +1448,7 @@
       if (amount <= 0 || !description) return;
 
       if (type === 'expense' && activePaymentType === 'card' && appState.cards.length === 0) {
-        alert('Você selecionou "Cartão Crédito", mas ainda não cadastrou nenhum cartão! Vá até a aba "Nossos Cartões" e cadastre um cartão primeiro.');
+        alert('Cadastre primeiro um cartão de crédito na aba "Cartões"!');
         return;
       }
 
@@ -1845,21 +1469,19 @@
       closeModal('transactionModal');
       renderAll();
 
-      // Confetti se for receita!
       if (type === 'income' && window.confetti) {
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+        confetti({ particleCount: 40, spread: 50, origin: { y: 0.8 } });
       }
     }
 
     function deleteTransaction(id) {
-      if (confirm('Deseja excluir este lançamento?')) {
+      if (confirm('Excluir este lançamento?')) {
         appState.transactions = appState.transactions.filter(t => t.id !== id);
         saveState();
         renderAll();
       }
     }
 
-    /* Cartão */
     function openCardModal() {
       document.getElementById('cardForm').reset();
       document.getElementById('cardModal').classList.remove('hidden');
@@ -1876,50 +1498,45 @@
 
       if (!name) return;
 
-      const newCard = {
+      appState.cards.push({
         id: 'card_' + Date.now(),
         name,
         limit,
         closingDay,
         dueDay,
         owner
-      };
+      });
 
-      appState.cards.push(newCard);
       saveState();
       closeModal('cardModal');
       renderAll();
     }
 
     function deleteCard(id) {
-      if (confirm('Deseja remover este cartão de crédito? Os gastos já lançados continuarão no histórico.')) {
+      if (confirm('Remover este cartão?')) {
         appState.cards = appState.cards.filter(c => c.id !== id);
         saveState();
         renderAll();
       }
     }
 
-    /* Conta Fixa & Empréstimo */
     function setBillType(type) {
       document.getElementById('billType').value = type;
       const btnBill = document.getElementById('btnTypeBill');
       const btnLoan = document.getElementById('btnTypeLoan');
       const loanFields = document.getElementById('loanSpecificFields');
-      const header = document.getElementById('billModalHeader');
       const title = document.getElementById('billModalTitle');
 
       if (type === 'loan') {
-        btnLoan.className = 'p-2.5 rounded-xl border text-xs font-bold border-indigo-500 bg-indigo-50 text-indigo-900 flex items-center justify-center gap-1.5';
-        btnBill.className = 'p-2.5 rounded-xl border text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5';
+        btnLoan.className = 'p-2 rounded-xl border font-bold border-indigo-500 bg-indigo-50 text-indigo-900 text-center';
+        btnBill.className = 'p-2 rounded-xl border font-bold border-slate-200 text-slate-600 text-center';
         loanFields.classList.remove('hidden');
-        header.className = 'p-5 bg-indigo-600 text-white flex items-center justify-between';
-        title.innerText = 'Novo Empréstimo / Dívida';
+        title.innerText = 'Novo Empréstimo';
       } else {
-        btnBill.className = 'p-2.5 rounded-xl border text-xs font-bold border-amber-500 bg-amber-50 text-amber-900 flex items-center justify-center gap-1.5';
-        btnLoan.className = 'p-2.5 rounded-xl border text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5';
+        btnBill.className = 'p-2 rounded-xl border font-bold border-amber-500 bg-amber-50 text-amber-900 text-center';
+        btnLoan.className = 'p-2 rounded-xl border font-bold border-slate-200 text-slate-600 text-center';
         loanFields.classList.add('hidden');
-        header.className = 'p-5 bg-amber-600 text-white flex items-center justify-between';
-        title.innerText = 'Nova Conta Fixa / Boleto';
+        title.innerText = 'Nova Conta Fixa';
       }
     }
 
@@ -1936,13 +1553,12 @@
       const name = document.getElementById('billNameInput').value.trim();
       const amount = parseFloat(document.getElementById('billAmountInput').value) || 0;
       const dueDay = parseInt(document.getElementById('billDueDayInput').value) || 10;
-
       const installmentsLeft = parseInt(document.getElementById('loanInstallmentsLeft').value) || null;
       const totalRemaining = parseFloat(document.getElementById('loanTotalRemaining').value) || null;
 
       if (!name || amount <= 0) return;
 
-      const newBill = {
+      appState.bills.push({
         id: (type === 'loan' ? 'loan_' : 'bill_') + Date.now(),
         type,
         name,
@@ -1951,9 +1567,8 @@
         installmentsLeft,
         totalRemaining,
         paidMonths: []
-      };
+      });
 
-      appState.bills.push(newBill);
       saveState();
       closeModal('billModal');
       renderAll();
@@ -1965,7 +1580,6 @@
       if (!bill) return;
 
       if (!bill.paidMonths) bill.paidMonths = [];
-
       const idx = bill.paidMonths.indexOf(targetMonthStr);
       if (idx > -1) {
         bill.paidMonths.splice(idx, 1);
@@ -1978,16 +1592,13 @@
     }
 
     function deleteBill(id) {
-      if (confirm('Deseja excluir este item das contas?')) {
+      if (confirm('Excluir esta conta?')) {
         appState.bills = appState.bills.filter(b => b.id !== id);
         saveState();
         renderAll();
       }
     }
 
-    /* ==========================================================================
-       CONFIGURAÇÕES, BACKUP & MODAIS
-       ========================================================================== */
     function openSettingsModal() {
       document.getElementById('settingsModal').classList.remove('hidden');
       lucide.createIcons();
@@ -2039,20 +1650,18 @@
             appState = parsed;
             saveState();
             renderAll();
-            alert('Backup restaurado com sucesso!');
+            alert('Backup restaurado!');
             closeModal('settingsModal');
-          } else {
-            alert('Arquivo de backup inválido.');
           }
         } catch (err) {
-          alert('Erro ao processar o arquivo JSON.');
+          alert('Arquivo inválido.');
         }
       };
       reader.readAsText(file);
     }
 
     function confirmResetAllData() {
-      if (confirm('Atenção: Isso irá apagar todas as despesas e receitas salvas. Tem certeza absoluta?')) {
+      if (confirm('Zerar todas as contas e gastos?')) {
         localStorage.removeItem(STORAGE_KEY);
         location.reload();
       }
