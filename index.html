@@ -543,15 +543,18 @@
             <div id="txCardSelectorWrapper" class="hidden mt-2.5 p-2.5 bg-purple-50/70 border border-purple-100 rounded-2xl space-y-2">
               <div>
                 <label class="block text-[10px] font-bold text-purple-700 uppercase mb-1">Qual Cartão de Crédito?</label>
-                <select id="txCardId" class="w-full px-3 py-2 text-xs rounded-xl border border-purple-200 bg-white text-purple-900 font-bold focus:ring-2 focus:ring-purple-500">
+                <select id="txCardId" onchange="updateCardInvoicePreview()" class="w-full px-3 py-2 text-xs rounded-xl border border-purple-200 bg-white text-purple-900 font-bold focus:ring-2 focus:ring-purple-500">
                   <!-- Cartões preenchidos via JS -->
                 </select>
               </div>
 
+              <!-- Aviso Inteligente da Data de Fechamento e Fatura -->
+              <div id="txCardClosingAdvice" class="p-2.5 rounded-xl text-xs space-y-0.5 hidden"></div>
+
               <div>
                 <label class="block text-[10px] font-bold text-purple-700 uppercase mb-1">Número de Parcelas</label>
-                <select id="txInstallments" onchange="updateInstallmentHint()" class="w-full px-3 py-2 text-xs rounded-xl border border-purple-200 bg-white text-slate-800 font-bold">
-                  <option value="1">1x à vista (cai neste mês)</option>
+                <select id="txInstallments" onchange="updateCardInvoicePreview()" class="w-full px-3 py-2 text-xs rounded-xl border border-purple-200 bg-white text-slate-800 font-bold">
+                  <option value="1">1x à vista</option>
                   <option value="2">2x</option>
                   <option value="3">3x</option>
                   <option value="4">4x</option>
@@ -588,8 +591,8 @@
             </div>
 
             <div id="txDateWrapper">
-              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data</label>
-              <input type="date" id="txDate" required class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-200 bg-white">
+              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data da Compra</label>
+              <input type="date" id="txDate" onchange="updateCardInvoicePreview()" required class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-200 bg-white">
             </div>
           </div>
 
@@ -629,12 +632,14 @@
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Dia Fecha</label>
-              <input type="number" min="1" max="31" id="cardClosingDay" required placeholder="Ex: 10" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Dia do Fechamento</label>
+              <input type="number" min="1" max="31" id="cardClosingDay" required placeholder="Ex: 20" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+              <span class="text-[9px] text-slate-400 block mt-0.5 leading-tight">Compras após este dia caem na fatura do mês seguinte</span>
             </div>
             <div>
-              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Dia Vence</label>
-              <input type="number" min="1" max="31" id="cardDueDay" required placeholder="Ex: 17" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Dia do Vencimento</label>
+              <input type="number" min="1" max="31" id="cardDueDay" required placeholder="Ex: 27" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+              <span class="text-[9px] text-slate-400 block mt-0.5 leading-tight">Data de pagamento da fatura</span>
             </div>
           </div>
           <div>
@@ -923,7 +928,16 @@
       const txDateInput = document.getElementById('txDate');
       if (txDateInput) txDateInput.value = today;
 
-      document.getElementById('txAmount')?.addEventListener('input', updateInstallmentHint);
+      document.getElementById('txAmount')?.addEventListener('input', () => {
+        updateInstallmentHint();
+        updateCardInvoicePreview();
+      });
+      document.getElementById('txDate')?.addEventListener('change', updateCardInvoicePreview);
+      document.getElementById('txCardId')?.addEventListener('change', updateCardInvoicePreview);
+      document.getElementById('txInstallments')?.addEventListener('change', () => {
+        updateInstallmentHint();
+        updateCardInvoicePreview();
+      });
       document.getElementById('txSearchInput')?.addEventListener('input', renderTransactionsList);
       document.getElementById('txFilterPerson')?.addEventListener('change', renderTransactionsList);
       document.getElementById('txFilterMethod')?.addEventListener('change', renderTransactionsList);
@@ -1060,6 +1074,46 @@
       return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    // Calcula em qual fatura/mês a despesa deve entrar, considerando o dia de fechamento do cartão
+    function getTxBillingMonth(tx) {
+      if (!tx) return '';
+      if (tx.billingMonth) return tx.billingMonth;
+
+      if (tx.method === 'card' && tx.cardId) {
+        const card = appState.cards.find(c => c.id === tx.cardId);
+        if (card && card.closingDay) {
+          const rawDate = tx.purchaseDate || tx.date;
+          if (rawDate && rawDate.includes('-')) {
+            const [yStr, mStr, dStr] = rawDate.split('-');
+            let year = parseInt(yStr, 10);
+            let month = parseInt(mStr, 10);
+            const day = parseInt(dStr, 10);
+            const closingDay = parseInt(card.closingDay, 10);
+
+            // Regra de Fechamento: Se comprou após o dia do fechamento, entra na fatura do mês seguinte
+            let offset = (day > closingDay) ? 1 : 0;
+
+            if (tx.purchaseDate && tx.installment && tx.installment.current > 1) {
+              offset += (tx.installment.current - 1);
+            }
+
+            month += offset;
+            while (month > 12) {
+              month -= 12;
+              year += 1;
+            }
+            while (month < 1) {
+              month += 12;
+              year -= 1;
+            }
+            return `${year}-${String(month).padStart(2, '0')}`;
+          }
+        }
+      }
+
+      return tx.date ? tx.date.slice(0, 7) : '';
+    }
+
     function calculateFinancials() {
       const targetMonthStr = `${appState.selectedYear}-${String(appState.selectedMonth + 1).padStart(2, '0')}`;
 
@@ -1074,7 +1128,7 @@
       const cardSpentMap = {};
 
       appState.transactions.forEach(tx => {
-        if (!tx.date || !tx.date.startsWith(targetMonthStr)) return;
+        if (getTxBillingMonth(tx) !== targetMonthStr) return;
         const val = parseFloat(tx.amount) || 0;
 
         if (tx.type === 'income') {
@@ -1518,7 +1572,7 @@
 
       return appState.transactions
         .filter(tx => {
-          if (!tx.date || !tx.date.startsWith(targetMonthStr)) return false;
+          if (getTxBillingMonth(tx) !== targetMonthStr) return false;
           if (search && !tx.description.toLowerCase().includes(search) && !(tx.category || '').toLowerCase().includes(search)) return false;
           if (personFilter !== 'all' && tx.person !== personFilter) return false;
           if (methodFilter !== 'all') {
@@ -1536,7 +1590,7 @@
           }
           return true;
         })
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
+        .sort((a, b) => new Date(b.purchaseDate || b.date) - new Date(a.purchaseDate || a.date));
     }
 
     function renderRecentTransactions() {
@@ -1584,6 +1638,7 @@
       const personBadgeClass = tx.person === 'p2' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700';
 
       let methodText = 'Pix';
+      let invoiceTag = '';
       if (tx.method === 'card') {
         const cardObj = appState.cards.find(c => c.id === tx.cardId);
         const cardName = cardObj ? cardObj.name : 'Cartão';
@@ -1592,11 +1647,20 @@
         } else {
           methodText = cardName;
         }
+
+        // Se a fatura é diferente do mês em que comprou, avisa visualmente
+        const bMonth = getTxBillingMonth(tx);
+        const pMonth = (tx.purchaseDate || tx.date || '').slice(0, 7);
+        if (bMonth && pMonth && bMonth !== pMonth) {
+          const [bY, bM] = bMonth.split('-');
+          invoiceTag = ` <span class="text-[9px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.2 rounded border border-purple-200">Fatura ${bM}/${bY}</span>`;
+        }
       } else if (tx.method === 'debit') {
         methodText = 'Dinheiro';
       }
 
-      const formattedDate = tx.date ? tx.date.split('-').reverse().slice(0, 2).join('/') : '';
+      const rawDate = tx.purchaseDate || tx.date;
+      const formattedDate = rawDate ? rawDate.split('-').reverse().slice(0, 2).join('/') : '';
 
       return `
         <div class="p-3 flex items-center justify-between hover:bg-slate-50 transition">
@@ -1610,7 +1674,7 @@
                 <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full ${personBadgeClass}">${escapeHTML(personName)}</span>
               </div>
               <div class="text-[10px] text-slate-400 truncate mt-0.5">
-                ${formattedDate} ${isIncome ? '• Entrada / Salário' : `• ${escapeHTML(tx.category || 'Geral')} • ${escapeHTML(methodText)}`}
+                ${formattedDate} ${isIncome ? '• Entrada / Salário' : `• ${escapeHTML(tx.category || 'Geral')} • ${escapeHTML(methodText)}`}${invoiceTag}
               </div>
             </div>
           </div>
@@ -1653,7 +1717,7 @@
 
       grid.innerHTML = appState.cards.map(card => {
         const cardSpent = appState.transactions
-          .filter(tx => tx.type === 'expense' && tx.method === 'card' && tx.cardId === card.id && tx.date.startsWith(targetMonthStr))
+          .filter(tx => tx.type === 'expense' && tx.method === 'card' && tx.cardId === card.id && getTxBillingMonth(tx) === targetMonthStr)
           .reduce((acc, cur) => acc + (parseFloat(cur.amount) || 0), 0);
 
         sumFaturas += cardSpent;
@@ -1855,26 +1919,107 @@
       if (cardWrapper) {
         if (type === 'card') {
           cardWrapper.classList.remove('hidden');
-          updateInstallmentHint();
+          updateCardInvoicePreview();
         } else {
           cardWrapper.classList.add('hidden');
         }
       }
     }
 
-    function updateInstallmentHint() {
-      const installments = parseInt(document.getElementById('txInstallments')?.value || '1', 10);
-      const amount = parseFloat(document.getElementById('txAmount')?.value || '0');
-      const hintEl = document.getElementById('txInstallmentHint');
-      if (!hintEl) return;
+    function updateCardInvoicePreview() {
+      const cardAdvice = document.getElementById('txCardClosingAdvice');
+      if (!cardAdvice) return;
 
-      if (installments > 1 && amount > 0) {
-        const part = amount / installments;
-        hintEl.innerHTML = `💳 Serão <b>${installments}x de R$ ${formatMoney(part)}</b> nos próximos meses`;
-        hintEl.classList.remove('hidden');
-      } else {
-        hintEl.classList.add('hidden');
+      if (activePaymentType !== 'card') {
+        cardAdvice.classList.add('hidden');
+        return;
       }
+
+      const cardId = document.getElementById('txCardId')?.value;
+      const card = appState.cards.find(c => c.id === cardId);
+      const dateStr = document.getElementById('txDate')?.value;
+      const installments = parseInt(document.getElementById('txInstallments')?.value || '1', 10);
+      const amount = parseFloat(document.getElementById('txAmount')?.value) || 0;
+
+      if (!card || !card.closingDay || !dateStr || !dateStr.includes('-')) {
+        cardAdvice.classList.add('hidden');
+        return;
+      }
+
+      const [yStr, mStr, dStr] = dateStr.split('-');
+      let pYear = parseInt(yStr, 10);
+      let pMonth = parseInt(mStr, 10);
+      const pDay = parseInt(dStr, 10);
+      const closingDay = parseInt(card.closingDay, 10);
+
+      // Regra de Fechamento: Se a compra foi feita após o dia do fechamento, fatura cai no próximo mês
+      const isAfterClosing = (pDay > closingDay);
+      let firstMonth = pMonth + (isAfterClosing ? 1 : 0);
+      let firstYear = pYear;
+      if (firstMonth > 12) {
+        firstMonth = 1;
+        firstYear += 1;
+      }
+
+      const months = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+      const targetInvoiceName = `${months[firstMonth - 1]} de ${firstYear}`;
+
+      cardAdvice.classList.remove('hidden');
+
+      if (isAfterClosing) {
+        cardAdvice.className = 'p-2.5 rounded-xl bg-purple-100/90 border border-purple-200 text-xs text-purple-950 space-y-1';
+        cardAdvice.innerHTML = `
+          <div class="flex items-center gap-1.5 font-bold text-purple-950">
+            <i data-lucide="calendar-check" class="w-3.5 h-3.5 text-purple-700"></i>
+            <span>Compra após o fechamento (dia ${closingDay})</span>
+          </div>
+          <p class="text-[11px] text-purple-800 leading-tight">
+            A fatura deste mês já fechou! Esta compra entrará na fatura de <b>${targetInvoiceName}</b> (vence dia ${card.dueDay || '--'}).
+          </p>
+        `;
+      } else {
+        cardAdvice.className = 'p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-950 space-y-1';
+        cardAdvice.innerHTML = `
+          <div class="flex items-center gap-1.5 font-bold text-blue-950">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-700"></i>
+            <span>Compra antes do fechamento (dia ${closingDay})</span>
+          </div>
+          <p class="text-[11px] text-blue-800 leading-tight">
+            Entrará na fatura de <b>${targetInvoiceName}</b> (vence dia ${card.dueDay || '--'}).
+          </p>
+        `;
+      }
+
+      // Atualiza também o hint de parcelamento
+      const hintEl = document.getElementById('txInstallmentHint');
+      if (hintEl) {
+        if (installments > 1 && amount > 0) {
+          const part = amount / installments;
+          let lastMonth = firstMonth + (installments - 1);
+          let lastYear = firstYear;
+          while (lastMonth > 12) {
+            lastMonth -= 12;
+            lastYear += 1;
+          }
+          const lastInvoiceName = `${months[lastMonth - 1].slice(0, 3)}/${lastYear}`;
+          hintEl.classList.remove('hidden');
+          hintEl.innerHTML = `💳 <b>${installments}x de R$ ${formatMoney(part)}</b> (1ª parcela em <b>${months[firstMonth - 1].slice(0, 3)}/${firstYear}</b> até <b>${lastInvoiceName}</b>)`;
+        } else if (installments > 1) {
+          hintEl.classList.remove('hidden');
+          hintEl.innerHTML = `💳 1ª parcela entrará na fatura de <b>${targetInvoiceName}</b>`;
+        } else {
+          hintEl.classList.add('hidden');
+        }
+      }
+
+      lucide.createIcons();
+    }
+
+    function updateInstallmentHint() {
+      updateCardInvoicePreview();
     }
 
     function openTransactionModal(type = 'expense') {
@@ -1947,33 +2092,75 @@
         return;
       }
 
-      if (type === 'expense' && activePaymentType === 'card' && installments > 1) {
-        // Compra parcelada: gera 1 lançamento para cada mês subsequente
-        const partAmount = Number((amount / installments).toFixed(2));
-        const parentId = 'purchase_' + Date.now();
-        const baseDate = new Date(date + 'T12:00:00');
+      if (type === 'expense' && activePaymentType === 'card') {
+        const cardObj = appState.cards.find(c => c.id === cardId);
+        const closingDay = cardObj ? (parseInt(cardObj.closingDay, 10) || 31) : 31;
+        const [yStr, mStr, dStr] = date.split('-');
+        let pYear = parseInt(yStr, 10);
+        let pMonth = parseInt(mStr, 10);
+        const pDay = parseInt(dStr, 10);
 
-        for (let i = 0; i < installments; i++) {
-          const installmentDate = new Date(baseDate);
-          installmentDate.setMonth(baseDate.getMonth() + i);
-          const installmentDateStr = installmentDate.toISOString().split('T')[0];
+        // Regra de Fechamento do Cartão:
+        // Se a compra foi feita após o dia do fechamento, a 1ª parcela vai para a fatura do mês seguinte
+        const baseOffset = (pDay > closingDay) ? 1 : 0;
+
+        if (installments > 1) {
+          // Compra parcelada: gera 1 lançamento para cada fatura subsequente
+          const partAmount = Number((amount / installments).toFixed(2));
+          const parentId = 'purchase_' + Date.now();
+
+          for (let i = 0; i < installments; i++) {
+            let bYear = pYear;
+            let bMonth = pMonth + baseOffset + i;
+            while (bMonth > 12) {
+              bMonth -= 12;
+              bYear += 1;
+            }
+            const billingMonthStr = `${bYear}-${String(bMonth).padStart(2, '0')}`;
+
+            appState.transactions.unshift({
+              id: `tx_${Date.now()}_${i}`,
+              parentId: parentId,
+              type: 'expense',
+              amount: partAmount,
+              description: `${description} (${i + 1}/${installments})`,
+              person: person,
+              category: category,
+              date: date,
+              purchaseDate: date,
+              billingMonth: billingMonthStr,
+              method: 'card',
+              cardId: cardId,
+              installment: { current: i + 1, total: installments }
+            });
+          }
+        } else {
+          // À vista no Cartão (1x)
+          let bYear = pYear;
+          let bMonth = pMonth + baseOffset;
+          while (bMonth > 12) {
+            bMonth -= 12;
+            bYear += 1;
+          }
+          const billingMonthStr = `${bYear}-${String(bMonth).padStart(2, '0')}`;
 
           appState.transactions.unshift({
-            id: `tx_${Date.now()}_${i}`,
-            parentId: parentId,
+            id: 'tx_' + Date.now(),
             type: 'expense',
-            amount: partAmount,
-            description: `${description} (${i + 1}/${installments})`,
+            amount: amount,
+            description: description,
             person: person,
             category: category,
-            date: installmentDateStr,
+            date: date,
+            purchaseDate: date,
+            billingMonth: billingMonthStr,
             method: 'card',
             cardId: cardId,
-            installment: { current: i + 1, total: installments }
+            installment: null
           });
         }
       } else {
-        // À vista (Pix, Dinheiro ou Cartão 1x)
+        // Pix, Dinheiro ou Salário
         appState.transactions.unshift({
           id: 'tx_' + Date.now(),
           type: type,
@@ -1982,8 +2169,10 @@
           person: person,
           category: category,
           date: date,
+          purchaseDate: date,
+          billingMonth: date.slice(0, 7),
           method: type === 'income' ? 'pix' : activePaymentType,
-          cardId: (type === 'expense' && activePaymentType === 'card') ? cardId : null,
+          cardId: null,
           installment: null
         });
       }
