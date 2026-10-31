@@ -126,7 +126,7 @@
 
           <div class="my-2">
             <div class="flex items-baseline gap-1.5 flex-wrap">
-              <span class="text-xs text-slate-400 font-semibold">R$</span>
+              <span id="heroCurrencySymbol" class="text-xs text-slate-400 font-semibold">R$</span>
               <h2 id="heroAvailableToSpend" class="text-3xl font-black tracking-tight text-white leading-none">0,00</h2>
             </div>
             <p id="heroAdviceText" class="text-[11px] text-slate-300 mt-2 leading-tight">
@@ -1054,10 +1054,11 @@
       }
 
       const dailySafeLimit = availableToSpend > 0 ? (availableToSpend / daysRemaining) : 0;
-      const committedPercent = totalIncome > 0 ? Math.min(100, Math.round((totalCommitted / totalIncome) * 100)) : 100;
+      const committedPercent = totalIncome > 0 ? Math.min(100, Math.round((totalCommitted / totalIncome) * 100)) : 0;
 
       return {
         totalIncome,
+        totalCommitted,
         totalPixDebit,
         totalCreditCards,
         totalCardsDuePending,
@@ -1086,6 +1087,7 @@
 
       const heroContainer = document.getElementById('heroCardContainer');
       const heroBadge = document.getElementById('heroStatusBadge');
+      const heroCurrency = document.getElementById('heroCurrencySymbol');
       const heroAvailable = document.getElementById('heroAvailableToSpend');
       const heroAdvice = document.getElementById('heroAdviceText');
       const heroDaily = document.getElementById('heroDailyLimit');
@@ -1093,65 +1095,111 @@
       const progBar = document.getElementById('budgetProgressBar');
       const progPercent = document.getElementById('budgetProgressPercent');
 
-      // Alerta visual: NO VERMELHO vs NO AZUL
-      if (stats.availableToSpend < 0) {
-        // Alerta Vermelho
+      // 3 Estados:
+      // 1. Sem salário cadastrado ainda neste mês (totalIncome === 0)
+      // 2. Realmente No Vermelho (totalIncome > 0 && availableToSpend < 0)
+      // 3. No Azul (totalIncome > 0 && availableToSpend >= 0)
+      if (stats.totalIncome === 0) {
+        // Aguardando Salário (não é alerta de perigo, apenas aguarda preenchimento)
         if (heroContainer) {
-          heroContainer.className = "relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-rose-950 to-slate-900 text-white p-4 shadow-lg border border-rose-700/60";
+          heroContainer.className = "relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-4 shadow-lg border border-indigo-700/50 transition-all duration-300 cursor-pointer active:scale-[0.98]";
+        }
+        if (heroBadge) {
+          heroBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[11px] font-bold backdrop-blur-md";
+          heroBadge.innerHTML = '<i data-lucide="info" class="w-3 h-3 text-indigo-300"></i><span>AGUARDANDO SALÁRIO</span>';
+        }
+        if (heroCurrency) {
+          heroCurrency.innerText = 'R$';
+          heroCurrency.className = 'text-xs text-slate-400 font-semibold';
+        }
+        if (heroAvailable) {
+          heroAvailable.innerText = '0,00';
+          heroAvailable.className = 'text-3xl font-black tracking-tight text-white leading-none';
+        }
+        if (heroAdvice) {
+          if (stats.totalCommitted > 0) {
+            const paidText = (stats.totalBillsPaid + stats.totalCardsDuePaid > 0) 
+              ? ` (R$ ${formatMoney(stats.totalBillsPaid + stats.totalCardsDuePaid)} já pagos ✓)` 
+              : '';
+            heroAdvice.innerHTML = `Mês ainda sem salário registrado. Há <strong>R$ ${formatMoney(stats.totalCommitted)}</strong> em contas/gastos programados${paidText}. Toque em <strong>+ Salário / Receita</strong> para ver o saldo que sobra!`;
+          } else {
+            heroAdvice.innerHTML = 'Nenhum salário ou gasto cadastrado para este mês. Toque no botão verde <strong>+ Salário / Receita</strong> para começar.';
+          }
+        }
+        if (heroDaily) {
+          heroDaily.innerHTML = `<span class="text-xs text-indigo-300 font-semibold">Aguardando salário</span>`;
+        }
+        if (progBar && progPercent) {
+          progPercent.innerText = stats.totalCommitted > 0 ? `R$ ${formatMoney(stats.totalCommitted)} em contas` : 'Aguardando salário';
+          progBar.style.width = '0%';
+          progBar.className = 'bg-indigo-500 h-1.5 rounded-full';
+        }
+      } else if (stats.availableToSpend < 0) {
+        // Alerta Vermelho REAL (Gastos > Salário cadastrado)
+        if (heroContainer) {
+          heroContainer.className = "relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-rose-950 to-slate-900 text-white p-4 shadow-lg border border-rose-700/60 transition-all duration-300 cursor-pointer active:scale-[0.98]";
         }
         if (heroBadge) {
           heroBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-bold backdrop-blur-md";
           heroBadge.innerHTML = '<i data-lucide="alert-triangle" class="w-3 h-3 text-rose-400"></i><span>NO VERMELHO! CUIDADO</span>';
         }
+        if (heroCurrency) {
+          heroCurrency.innerText = '- R$';
+          heroCurrency.className = 'text-xs text-rose-400 font-semibold';
+        }
         if (heroAvailable) {
-          heroAvailable.innerText = `- R$ ${formatMoney(Math.abs(stats.availableToSpend))}`;
+          heroAvailable.innerText = formatMoney(Math.abs(stats.availableToSpend));
           heroAvailable.className = 'text-3xl font-black tracking-tight text-rose-400 leading-none';
         }
         if (heroAdvice) {
-          heroAdvice.innerText = `Atenção: Os gastos, contas e faturas ultrapassaram o salário em R$ ${formatMoney(Math.abs(stats.availableToSpend))}. Evitem novos gastos!`;
+          heroAdvice.innerText = `Atenção: Os gastos e contas (R$ ${formatMoney(stats.totalCommitted)}) superaram o salário (R$ ${formatMoney(stats.totalIncome)}) em R$ ${formatMoney(Math.abs(stats.availableToSpend))}. Evitem novos gastos!`;
         }
         if (heroDaily) {
           heroDaily.innerHTML = `R$ 0,00 <span class="text-[10px] font-normal text-rose-300">/ orçamento estourado</span>`;
         }
+        if (progBar && progPercent) {
+          progPercent.innerText = `${stats.committedPercent}% da renda (Estourado)`;
+          progBar.style.width = '100%';
+          progBar.className = 'bg-rose-500 h-1.5 rounded-full';
+        }
       } else {
-        // No Azul
+        // No Azul (Saldo livre disponível)
         if (heroContainer) {
-          heroContainer.className = "relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-4 shadow-lg border border-slate-800";
+          heroContainer.className = "relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-4 shadow-lg border border-slate-800 transition-all duration-300 cursor-pointer active:scale-[0.98]";
         }
         if (heroBadge) {
           heroBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold backdrop-blur-md";
           heroBadge.innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 text-emerald-300"></i><span>NO AZUL! SALDO LIVRE</span>';
+        }
+        if (heroCurrency) {
+          heroCurrency.innerText = 'R$';
+          heroCurrency.className = 'text-xs text-slate-400 font-semibold';
         }
         if (heroAvailable) {
           heroAvailable.innerText = formatMoney(stats.availableToSpend);
           heroAvailable.className = 'text-3xl font-black tracking-tight text-white leading-none';
         }
         if (heroAdvice) {
-          if (stats.totalIncome === 0) {
-            heroAdvice.innerText = 'Cadastre o salário deste mês para ver o limite disponível.';
-          } else {
-            heroAdvice.innerText = `Tudo no controle! Sobram R$ ${formatMoney(stats.availableToSpend)} livres após descontar todas as contas e faturas.`;
-          }
+          heroAdvice.innerText = `Tudo no controle! Sobram R$ ${formatMoney(stats.availableToSpend)} livres após descontar todas as contas e faturas.`;
         }
         if (heroDaily) {
           heroDaily.innerHTML = `R$ ${formatMoney(stats.dailySafeLimit)} <span class="text-[10px] font-normal text-slate-300">/ dia</span>`;
+        }
+        if (progBar && progPercent) {
+          progPercent.innerText = `${stats.committedPercent}% da renda comprometida`;
+          progBar.style.width = `${stats.committedPercent}%`;
+          if (stats.committedPercent > 90) {
+            progBar.className = 'bg-rose-500 h-1.5 rounded-full';
+          } else if (stats.committedPercent > 75) {
+            progBar.className = 'bg-amber-400 h-1.5 rounded-full';
+          } else {
+            progBar.className = 'bg-gradient-to-r from-emerald-400 to-teal-300 h-1.5 rounded-full';
+          }
         }
       }
 
       if (heroDays) {
         heroDays.innerText = `Restam ${stats.daysRemaining} dias`;
-      }
-
-      if (progBar && progPercent) {
-        progPercent.innerText = `${stats.committedPercent}% da renda`;
-        progBar.style.width = `${stats.committedPercent}%`;
-        if (stats.committedPercent > 90) {
-          progBar.className = 'bg-rose-500 h-1.5 rounded-full';
-        } else if (stats.committedPercent > 75) {
-          progBar.className = 'bg-amber-400 h-1.5 rounded-full';
-        } else {
-          progBar.className = 'bg-gradient-to-r from-emerald-400 to-teal-300 h-1.5 rounded-full';
-        }
       }
 
       // 4 Cards de Métricas
@@ -1169,9 +1217,14 @@
       document.getElementById('statBillsPending').innerText = `R$ ${formatMoney(stats.totalPendingToPay)}`;
       const billsSub = document.getElementById('statBillsPendingSub');
       if (billsSub) {
-        billsSub.innerText = stats.totalPendingToPay === 0 
-          ? 'Tudo pago este mês! 🎉' 
-          : `${stats.billsPendingCount} contas + ${stats.cardsPendingCount} faturas`;
+        if (stats.totalPendingToPay === 0) {
+          const totalPaid = stats.totalBillsPaid + stats.totalCardsDuePaid;
+          billsSub.innerText = totalPaid > 0 
+            ? `R$ ${formatMoney(totalPaid)} já pago no mês ✓` 
+            : 'Tudo pago este mês! 🎉';
+        } else {
+          billsSub.innerText = `${stats.billsPendingCount} contas + ${stats.cardsPendingCount} faturas`;
+        }
       }
 
       // Atualiza textos do topo da aba Cartões
