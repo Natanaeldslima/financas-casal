@@ -1,0 +1,16 @@
+{
+  "name": "financas-casal",
+  "version": "1.0.0",
+  "description": "Controle financeiro pessoal e compartilhado para casal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["financas", "casal", "orcamento", "cartoes", "pix"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
