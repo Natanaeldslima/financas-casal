@@ -112,12 +112,12 @@
       <!-- ==================== ABA 1: INÍCIO (DASHBOARD) ==================== -->
       <section id="tab-dashboard" class="space-y-4">
         
-        <!-- CARD PRINCIPAL: O QUE AINDA PODEMOS GASTAR -->
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-4 shadow-lg border border-slate-800">
+        <!-- CARD PRINCIPAL: O QUE AINDA PODEMOS GASTAR (ALERTA NO AZUL OU NO VERMELHO) -->
+        <div id="heroCardContainer" class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-4 shadow-lg border border-slate-800 transition-colors duration-300">
           <div class="flex items-center justify-between mb-2">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-300 text-[11px] font-semibold backdrop-blur-md">
-              <i data-lucide="sparkles" class="w-3 h-3"></i>
-              <span>O que ainda podemos gastar</span>
+            <span id="heroStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold backdrop-blur-md">
+              <i data-lucide="sparkles" class="w-3 h-3 text-emerald-300"></i>
+              <span>NO AZUL! SALDO LIVRE</span>
             </span>
             <span id="budgetProgressPercent" class="text-xs font-bold text-slate-300">0% comprometido</span>
           </div>
@@ -164,7 +164,7 @@
               </div>
             </div>
             <div id="statIncome" class="text-base font-extrabold text-slate-900 truncate">R$ 0,00</div>
-            <span class="text-[10px] text-slate-400">Salário do casal</span>
+            <span class="text-[10px] text-slate-400 truncate">Salário do casal</span>
           </div>
 
           <!-- Faturas Cartões -->
@@ -176,7 +176,7 @@
               </div>
             </div>
             <div id="statCreditCards" class="text-base font-extrabold text-purple-700 truncate">R$ 0,00</div>
-            <span class="text-[10px] text-slate-400">Faturas do mês</span>
+            <span id="statCreditCardsSub" class="text-[10px] text-slate-400 truncate">Faturas do mês</span>
           </div>
 
           <!-- Pix & Dinheiro -->
@@ -188,10 +188,10 @@
               </div>
             </div>
             <div id="statPixDebit" class="text-base font-extrabold text-blue-700 truncate">R$ 0,00</div>
-            <span class="text-[10px] text-slate-400">Já saiu da conta</span>
+            <span class="text-[10px] text-slate-400 truncate">Já saiu da conta</span>
           </div>
 
-          <!-- Contas a Pagar -->
+          <!-- Contas a Pagar (Pendentes) -->
           <div class="bg-white rounded-2xl p-3 border border-slate-200/90 shadow-sm flex flex-col justify-between">
             <div class="flex items-center justify-between mb-1">
               <span class="text-[10px] font-bold text-amber-600 uppercase tracking-wider">A Pagar</span>
@@ -200,7 +200,7 @@
               </div>
             </div>
             <div id="statBillsPending" class="text-base font-extrabold text-amber-600 truncate">R$ 0,00</div>
-            <span class="text-[10px] text-slate-400">Boletos pendentes</span>
+            <span id="statBillsPendingSub" class="text-[10px] text-slate-400 truncate">Boletos e faturas</span>
           </div>
 
         </div>
@@ -321,7 +321,11 @@
             </button>
           </div>
           <div class="text-2xl font-black text-white mt-1" id="totalCardsDueAmount">R$ 0,00</div>
-          <p class="text-[11px] text-purple-300 mt-0.5">Descontado automaticamente do que vocês podem gastar.</p>
+          <div class="flex items-center gap-2 mt-1 text-[11px] text-purple-200">
+            <span id="totalCardsPendingText">A pagar: R$ 0,00</span>
+            <span>•</span>
+            <span id="totalCardsPaidText">Pagas: R$ 0,00</span>
+          </div>
         </div>
 
         <div id="cardsListGrid" class="space-y-3">
@@ -433,14 +437,14 @@
 
           <!-- Descrição -->
           <div>
-            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">O que foi comprado?</label>
+            <label id="txDescLabel" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">O que foi comprado?</label>
             <input type="text" id="txDescription" required placeholder="Ex: Mercado, Padaria, Farmácia..."
               class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
           </div>
 
-          <!-- Quem gastou? -->
+          <!-- Quem gastou / Quem recebeu? -->
           <div>
-            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Quem realizou?</label>
+            <label id="txPersonLabel" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Quem realizou?</label>
             <div class="grid grid-cols-2 gap-2">
               <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 text-xs font-bold text-blue-700">
                 <input type="radio" name="txPerson" value="p1" checked class="accent-blue-600">
@@ -453,7 +457,7 @@
             </div>
           </div>
 
-          <!-- Forma de Pagamento -->
+          <!-- Forma de Pagamento (Apenas para Despesa) -->
           <div id="txPaymentMethodSection">
             <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Como foi pago?</label>
             <div class="grid grid-cols-3 gap-1.5">
@@ -468,17 +472,41 @@
               </button>
             </div>
 
-            <!-- Seletor do Cartão se for Cartão de Crédito -->
-            <div id="txCardSelectorWrapper" class="hidden mt-2">
-              <select id="txCardId" class="w-full px-3 py-2 text-xs rounded-xl border border-purple-200 bg-purple-50 text-purple-900 font-bold">
-                <!-- Cartões preenchidos via JS -->
-              </select>
+            <!-- Seletor do Cartão & Parcelamento -->
+            <div id="txCardSelectorWrapper" class="hidden mt-2.5 p-2.5 bg-purple-50/70 border border-purple-100 rounded-2xl space-y-2">
+              <div>
+                <label class="block text-[10px] font-bold text-purple-700 uppercase mb-1">Qual Cartão de Crédito?</label>
+                <select id="txCardId" class="w-full px-3 py-2 text-xs rounded-xl border border-purple-200 bg-white text-purple-900 font-bold focus:ring-2 focus:ring-purple-500">
+                  <!-- Cartões preenchidos via JS -->
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-purple-700 uppercase mb-1">Número de Parcelas</label>
+                <select id="txInstallments" onchange="updateInstallmentHint()" class="w-full px-3 py-2 text-xs rounded-xl border border-purple-200 bg-white text-slate-800 font-bold">
+                  <option value="1">1x à vista (cai neste mês)</option>
+                  <option value="2">2x</option>
+                  <option value="3">3x</option>
+                  <option value="4">4x</option>
+                  <option value="5">5x</option>
+                  <option value="6">6x</option>
+                  <option value="7">7x</option>
+                  <option value="8">8x</option>
+                  <option value="9">9x</option>
+                  <option value="10">10x</option>
+                  <option value="11">11x</option>
+                  <option value="12">12x</option>
+                  <option value="18">18x</option>
+                  <option value="24">24x</option>
+                </select>
+                <p id="txInstallmentHint" class="text-[11px] text-purple-700 font-bold mt-1.5 hidden"></p>
+              </div>
             </div>
           </div>
 
           <!-- Categoria e Data -->
-          <div class="grid grid-cols-2 gap-2">
-            <div>
+          <div class="grid grid-cols-2 gap-2" id="txCategoryAndDateGrid">
+            <div id="txCategoryWrapper">
               <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Categoria</label>
               <select id="txCategory" class="w-full px-2 py-2 text-xs rounded-xl border border-slate-200 bg-white">
                 <option value="Mercado">🛒 Mercado / Feira</option>
@@ -492,7 +520,7 @@
               </select>
             </div>
 
-            <div>
+            <div id="txDateWrapper">
               <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Data</label>
               <input type="date" id="txDate" required class="w-full px-2 py-1.5 text-xs rounded-xl border border-slate-200 bg-white">
             </div>
@@ -760,6 +788,7 @@
       const txDateInput = document.getElementById('txDate');
       if (txDateInput) txDateInput.value = today;
 
+      document.getElementById('txAmount')?.addEventListener('input', updateInstallmentHint);
       document.getElementById('txSearchInput')?.addEventListener('input', renderTransactionsList);
       document.getElementById('txFilterPerson')?.addEventListener('change', renderTransactionsList);
       document.getElementById('txFilterMethod')?.addEventListener('change', renderTransactionsList);
@@ -902,9 +931,12 @@
       let totalIncome = 0;
       let totalPixDebit = 0;
       let totalCreditCards = 0;
+      let totalCardsDuePending = 0;
+      let totalCardsDuePaid = 0;
       let p1Expenses = 0;
       let p2Expenses = 0;
       const categoryMap = {};
+      const cardSpentMap = {};
 
       appState.transactions.forEach(tx => {
         if (!tx.date || !tx.date.startsWith(targetMonthStr)) return;
@@ -915,6 +947,9 @@
         } else {
           if (tx.method === 'card') {
             totalCreditCards += val;
+            if (tx.cardId) {
+              cardSpentMap[tx.cardId] = (cardSpentMap[tx.cardId] || 0) + val;
+            }
           } else {
             totalPixDebit += val;
           }
@@ -930,9 +965,27 @@
         }
       });
 
+      // Faturas de cartões: pagas vs pendentes
+      let cardsPendingCount = 0;
+      let cardsPaidCount = 0;
+      appState.cards.forEach(card => {
+        const isPaid = (card.paidMonths || []).includes(targetMonthStr);
+        const spent = cardSpentMap[card.id] || 0;
+        if (isPaid) {
+          totalCardsDuePaid += spent;
+          if (spent > 0) cardsPaidCount++;
+        } else {
+          totalCardsDuePending += spent;
+          if (spent > 0) cardsPendingCount++;
+        }
+      });
+
+      // Contas fixas e empréstimos
       let totalBills = 0;
       let totalBillsPending = 0;
       let totalBillsPaid = 0;
+      let billsPendingCount = 0;
+      let billsPaidCount = 0;
 
       appState.bills.forEach(bill => {
         const val = parseFloat(bill.amount) || 0;
@@ -940,13 +993,21 @@
         const isPaid = (bill.paidMonths || []).includes(targetMonthStr);
         if (isPaid) {
           totalBillsPaid += val;
+          billsPaidCount++;
         } else {
           totalBillsPending += val;
+          billsPendingCount++;
         }
       });
 
-      // Saldo Livre Real = Renda - Contas Fixas - Cartões - Gastos já feitos em Pix/Dinheiro
-      const availableToSpend = totalIncome - totalBills - totalCreditCards - totalPixDebit;
+      // Total comprometido no mês = gastos à vista + faturas de cartões + contas fixas e empréstimos
+      const totalCommitted = totalBills + totalCreditCards + totalPixDebit;
+
+      // Saldo Livre Real = Renda - Total Comprometido
+      const availableToSpend = totalIncome - totalCommitted;
+
+      // Total de contas e faturas que AINDA FALTAM PAGAR em dinheiro neste mês
+      const totalPendingToPay = totalBillsPending + totalCardsDuePending;
 
       const now = new Date();
       const isCurrentViewingMonth = (now.getFullYear() === appState.selectedYear && now.getMonth() === appState.selectedMonth);
@@ -961,16 +1022,22 @@
       }
 
       const dailySafeLimit = availableToSpend > 0 ? (availableToSpend / daysRemaining) : 0;
-      const totalCommitted = totalBills + totalCreditCards + totalPixDebit;
       const committedPercent = totalIncome > 0 ? Math.min(100, Math.round((totalCommitted / totalIncome) * 100)) : 100;
 
       return {
         totalIncome,
         totalPixDebit,
         totalCreditCards,
+        totalCardsDuePending,
+        totalCardsDuePaid,
+        cardsPendingCount,
+        cardsPaidCount,
         totalBills,
         totalBillsPending,
         totalBillsPaid,
+        billsPendingCount,
+        billsPaidCount,
+        totalPendingToPay,
         availableToSpend,
         dailySafeLimit,
         daysRemaining,
@@ -985,6 +1052,8 @@
       updateCoupleNamesInUI();
       const stats = calculateFinancials();
 
+      const heroContainer = document.getElementById('heroCardContainer');
+      const heroBadge = document.getElementById('heroStatusBadge');
       const heroAvailable = document.getElementById('heroAvailableToSpend');
       const heroAdvice = document.getElementById('heroAdviceText');
       const heroDaily = document.getElementById('heroDailyLimit');
@@ -992,28 +1061,51 @@
       const progBar = document.getElementById('budgetProgressBar');
       const progPercent = document.getElementById('budgetProgressPercent');
 
-      if (heroAvailable) {
-        heroAvailable.innerText = formatMoney(stats.availableToSpend);
-        if (stats.availableToSpend < 0) {
+      // Alerta visual: NO VERMELHO vs NO AZUL
+      if (stats.availableToSpend < 0) {
+        // Alerta Vermelho
+        if (heroContainer) {
+          heroContainer.className = "relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-rose-950 to-slate-900 text-white p-4 shadow-lg border border-rose-700/60";
+        }
+        if (heroBadge) {
+          heroBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-bold backdrop-blur-md";
+          heroBadge.innerHTML = '<i data-lucide="alert-triangle" class="w-3 h-3 text-rose-400"></i><span>NO VERMELHO! CUIDADO</span>';
+        }
+        if (heroAvailable) {
+          heroAvailable.innerText = `- R$ ${formatMoney(Math.abs(stats.availableToSpend))}`;
           heroAvailable.className = 'text-3xl font-black tracking-tight text-rose-400 leading-none';
-        } else {
+        }
+        if (heroAdvice) {
+          heroAdvice.innerText = `Atenção: Os gastos, contas e faturas ultrapassaram o salário em R$ ${formatMoney(Math.abs(stats.availableToSpend))}. Evitem novos gastos!`;
+        }
+        if (heroDaily) {
+          heroDaily.innerHTML = `R$ 0,00 <span class="text-[10px] font-normal text-rose-300">/ orçamento estourado</span>`;
+        }
+      } else {
+        // No Azul
+        if (heroContainer) {
+          heroContainer.className = "relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-4 shadow-lg border border-slate-800";
+        }
+        if (heroBadge) {
+          heroBadge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold backdrop-blur-md";
+          heroBadge.innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 text-emerald-300"></i><span>NO AZUL! SALDO LIVRE</span>';
+        }
+        if (heroAvailable) {
+          heroAvailable.innerText = formatMoney(stats.availableToSpend);
           heroAvailable.className = 'text-3xl font-black tracking-tight text-white leading-none';
         }
-      }
-
-      if (heroAdvice) {
-        if (stats.availableToSpend > 0) {
-          heroAdvice.innerText = `Tudo no controle! Sobram R$ ${formatMoney(stats.availableToSpend)} livres após contas e cartões.`;
-        } else if (stats.availableToSpend === 0 && stats.totalIncome === 0) {
-          heroAdvice.innerText = 'Cadastre o salário deste mês para ver o limite disponível.';
-        } else {
-          heroAdvice.innerText = `Atenção: Gastos superaram a renda em R$ ${formatMoney(Math.abs(stats.availableToSpend))}.`;
+        if (heroAdvice) {
+          if (stats.totalIncome === 0) {
+            heroAdvice.innerText = 'Cadastre o salário deste mês para ver o limite disponível.';
+          } else {
+            heroAdvice.innerText = `Tudo no controle! Sobram R$ ${formatMoney(stats.availableToSpend)} livres após descontar todas as contas e faturas.`;
+          }
+        }
+        if (heroDaily) {
+          heroDaily.innerHTML = `R$ ${formatMoney(stats.dailySafeLimit)} <span class="text-[10px] font-normal text-slate-300">/ dia</span>`;
         }
       }
 
-      if (heroDaily) {
-        heroDaily.innerHTML = `R$ ${formatMoney(stats.dailySafeLimit)} <span class="text-[10px] font-normal text-slate-300">/ dia</span>`;
-      }
       if (heroDays) {
         heroDays.innerText = `Restam ${stats.daysRemaining} dias`;
       }
@@ -1030,10 +1122,31 @@
         }
       }
 
+      // 4 Cards de Métricas
       document.getElementById('statIncome').innerText = `R$ ${formatMoney(stats.totalIncome)}`;
       document.getElementById('statCreditCards').innerText = `R$ ${formatMoney(stats.totalCreditCards)}`;
+      
+      const cardSub = document.getElementById('statCreditCardsSub');
+      if (cardSub) {
+        cardSub.innerText = `${stats.cardsPendingCount} a pagar • ${stats.cardsPaidCount} pagas`;
+      }
+
       document.getElementById('statPixDebit').innerText = `R$ ${formatMoney(stats.totalPixDebit)}`;
-      document.getElementById('statBillsPending').innerText = `R$ ${formatMoney(stats.totalBillsPending)}`;
+      
+      // Card "A Pagar": Faturas e Boletos que ainda faltam pagar
+      document.getElementById('statBillsPending').innerText = `R$ ${formatMoney(stats.totalPendingToPay)}`;
+      const billsSub = document.getElementById('statBillsPendingSub');
+      if (billsSub) {
+        billsSub.innerText = stats.totalPendingToPay === 0 
+          ? 'Tudo pago este mês! 🎉' 
+          : `${stats.billsPendingCount} contas + ${stats.cardsPendingCount} faturas`;
+      }
+
+      // Atualiza textos do topo da aba Cartões
+      const cardsPendingTxt = document.getElementById('totalCardsPendingText');
+      const cardsPaidTxt = document.getElementById('totalCardsPaidText');
+      if (cardsPendingTxt) cardsPendingTxt.innerText = `A pagar: R$ ${formatMoney(stats.totalCardsDuePending)}`;
+      if (cardsPaidTxt) cardsPaidTxt.innerText = `Pagas: R$ ${formatMoney(stats.totalCardsDuePaid)}`;
 
       renderRecentTransactions();
       renderTransactionsList();
@@ -1196,7 +1309,12 @@
       let methodText = 'Pix';
       if (tx.method === 'card') {
         const cardObj = appState.cards.find(c => c.id === tx.cardId);
-        methodText = cardObj ? cardObj.name : 'Cartão';
+        const cardName = cardObj ? cardObj.name : 'Cartão';
+        if (tx.installment && tx.installment.total > 1) {
+          methodText = `${cardName} (${tx.installment.current}/${tx.installment.total}x)`;
+        } else {
+          methodText = cardName;
+        }
       } else if (tx.method === 'debit') {
         methodText = 'Dinheiro';
       }
@@ -1215,7 +1333,7 @@
                 <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full ${personBadgeClass}">${escapeHTML(personName)}</span>
               </div>
               <div class="text-[10px] text-slate-400 truncate mt-0.5">
-                ${formattedDate} • ${escapeHTML(tx.category || 'Geral')} • ${escapeHTML(methodText)}
+                ${formattedDate} ${isIncome ? '• Entrada / Salário' : `• ${escapeHTML(tx.category || 'Geral')} • ${escapeHTML(methodText)}`}
               </div>
             </div>
           </div>
@@ -1265,27 +1383,33 @@
         const limitAvailable = Math.max(0, (card.limit || 0) - cardSpent);
         const percentUsed = card.limit > 0 ? Math.min(100, Math.round((cardSpent / card.limit) * 100)) : 0;
         const ownerName = card.owner === 'p2' ? appState.couple.p2Name : appState.couple.p1Name;
+        const isPaid = (card.paidMonths || []).includes(targetMonthStr);
 
         return `
           <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
-                  <i data-lucide="credit-card" class="w-4 h-4"></i>
+                <div class="w-7 h-7 rounded-lg ${isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'} flex items-center justify-center">
+                  <i data-lucide="${isPaid ? 'check-check' : 'credit-card'}" class="w-4 h-4"></i>
                 </div>
                 <div>
                   <h4 class="font-bold text-slate-900 text-xs">${escapeHTML(card.name)}</h4>
                   <span class="text-[10px] text-slate-400">Cartão de ${escapeHTML(ownerName)}</span>
                 </div>
               </div>
-              <button onclick="deleteCard('${card.id}')" class="text-slate-300 hover:text-rose-500 p-1">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
+              <div class="flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${isPaid ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+                  ${isPaid ? '✓ Paga' : 'Pendente'}
+                </span>
+                <button onclick="deleteCard('${card.id}')" class="text-slate-300 hover:text-rose-500 p-1">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
             </div>
 
-            <div class="p-2.5 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-between">
-              <span class="text-xs text-purple-800 font-bold">Fatura Atual:</span>
-              <span class="text-base font-black text-purple-900">R$ ${formatMoney(cardSpent)}</span>
+            <div class="p-2.5 rounded-xl ${isPaid ? 'bg-emerald-50 border border-emerald-100' : 'bg-purple-50 border border-purple-100'} flex items-center justify-between">
+              <span class="text-xs ${isPaid ? 'text-emerald-800' : 'text-purple-800'} font-bold">Fatura deste Mês:</span>
+              <span class="text-base font-black ${isPaid ? 'text-emerald-900' : 'text-purple-900'}">R$ ${formatMoney(cardSpent)}</span>
             </div>
 
             <div class="flex justify-between text-[11px] text-slate-500">
@@ -1294,14 +1418,37 @@
             </div>
 
             <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-              <div class="bg-purple-600 h-1.5 rounded-full" style="width: ${percentUsed}%"></div>
+              <div class="${isPaid ? 'bg-emerald-500' : 'bg-purple-600'} h-1.5 rounded-full" style="width: ${percentUsed}%"></div>
             </div>
+
+            <button onclick="toggleCardPaid('${card.id}')" class="w-full py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${isPaid ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-purple-600 hover:bg-purple-700 text-white shadow-sm'}">
+              <i data-lucide="${isPaid ? 'rotate-ccw' : 'check'}" class="w-3.5 h-3.5"></i>
+              <span>${isPaid ? 'Desfazer Pagamento da Fatura' : 'Marcar Fatura como Paga'}</span>
+            </button>
           </div>
         `;
       }).join('');
 
       if (totalDueEl) totalDueEl.innerText = `R$ ${formatMoney(sumFaturas)}`;
       lucide.createIcons();
+    }
+
+    function toggleCardPaid(cardId) {
+      const targetMonthStr = `${appState.selectedYear}-${String(appState.selectedMonth + 1).padStart(2, '0')}`;
+      const card = appState.cards.find(c => c.id === cardId);
+      if (!card) return;
+
+      if (!card.paidMonths) card.paidMonths = [];
+      const idx = card.paidMonths.indexOf(targetMonthStr);
+
+      if (idx > -1) {
+        card.paidMonths.splice(idx, 1);
+      } else {
+        card.paidMonths.push(targetMonthStr);
+      }
+
+      saveState();
+      renderAll();
     }
 
     function renderBillsList() {
@@ -1351,20 +1498,23 @@
             return `
               <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2">
                 <div class="flex items-center justify-between">
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">Empréstimo</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPaidThisMonth ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-indigo-800'}">
+                    ${isPaidThisMonth ? '✓ Parcela do Mês Paga' : 'Empréstimo a Pagar'}
+                  </span>
                   <button onclick="deleteBill('${loan.id}')" class="text-slate-300 hover:text-rose-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 </div>
                 <h4 class="font-bold text-slate-900 text-xs">${escapeHTML(loan.name)}</h4>
                 <div class="flex items-baseline justify-between">
-                  <span class="text-xs text-slate-400">Parcela:</span>
-                  <span class="text-base font-black text-indigo-600">R$ ${formatMoney(loan.amount)}</span>
+                  <span class="text-xs text-slate-400">Parcela mensal:</span>
+                  <span class="text-base font-black ${isPaidThisMonth ? 'text-emerald-600' : 'text-indigo-600'}">R$ ${formatMoney(loan.amount)}</span>
                 </div>
                 <div class="flex justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
-                  <span>Faltam: <b>${loan.installmentsLeft || '--'} meses</b></span>
-                  <span>Saldo: <b>R$ ${formatMoney(loan.totalRemaining)}</b></span>
+                  <span>Faltam: <b class="text-slate-800">${loan.installmentsLeft ?? '--'} parcelas</b></span>
+                  <span>Saldo restante: <b class="text-slate-800">R$ ${formatMoney(loan.totalRemaining)}</b></span>
                 </div>
-                <button onclick="toggleBillPaid('${loan.id}')" class="w-full py-1.5 rounded-xl text-xs font-bold transition ${isPaidThisMonth ? 'bg-slate-100 text-slate-600' : 'bg-emerald-600 text-white shadow-sm'}">
-                  ${isPaidThisMonth ? 'Parcela deste mês Paga' : 'Marcar Parcela como Paga'}
+                <button onclick="toggleBillPaid('${loan.id}')" class="w-full py-1.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${isPaidThisMonth ? 'bg-slate-100 text-slate-600' : 'bg-emerald-600 text-white shadow-sm'}">
+                  <i data-lucide="${isPaidThisMonth ? 'rotate-ccw' : 'check'}" class="w-3.5 h-3.5"></i>
+                  <span>${isPaidThisMonth ? 'Desfazer Pagamento' : 'Marcar Parcela como Paga (-1 parcela)'}</span>
                 </button>
               </div>
             `;
@@ -1373,6 +1523,42 @@
       }
 
       lucide.createIcons();
+    }
+
+    function toggleBillPaid(id) {
+      const targetMonthStr = `${appState.selectedYear}-${String(appState.selectedMonth + 1).padStart(2, '0')}`;
+      const bill = appState.bills.find(b => b.id === id);
+      if (!bill) return;
+
+      if (!bill.paidMonths) bill.paidMonths = [];
+      const idx = bill.paidMonths.indexOf(targetMonthStr);
+
+      if (idx > -1) {
+        // Desmarcando
+        bill.paidMonths.splice(idx, 1);
+        if (bill.type === 'loan') {
+          if (bill.installmentsLeft !== null && bill.installmentsLeft !== undefined) {
+            bill.installmentsLeft += 1;
+          }
+          if (bill.totalRemaining !== null && bill.totalRemaining !== undefined) {
+            bill.totalRemaining = Number((bill.totalRemaining + bill.amount).toFixed(2));
+          }
+        }
+      } else {
+        // Marcando como pago
+        bill.paidMonths.push(targetMonthStr);
+        if (bill.type === 'loan') {
+          if (bill.installmentsLeft !== null && bill.installmentsLeft !== undefined && bill.installmentsLeft > 0) {
+            bill.installmentsLeft -= 1;
+          }
+          if (bill.totalRemaining !== null && bill.totalRemaining !== undefined && bill.totalRemaining > 0) {
+            bill.totalRemaining = Math.max(0, Number((bill.totalRemaining - bill.amount).toFixed(2)));
+          }
+        }
+      }
+
+      saveState();
+      renderAll();
     }
 
     function setPaymentType(type) {
@@ -1392,9 +1578,25 @@
       if (cardWrapper) {
         if (type === 'card') {
           cardWrapper.classList.remove('hidden');
+          updateInstallmentHint();
         } else {
           cardWrapper.classList.add('hidden');
         }
+      }
+    }
+
+    function updateInstallmentHint() {
+      const installments = parseInt(document.getElementById('txInstallments')?.value || '1', 10);
+      const amount = parseFloat(document.getElementById('txAmount')?.value || '0');
+      const hintEl = document.getElementById('txInstallmentHint');
+      if (!hintEl) return;
+
+      if (installments > 1 && amount > 0) {
+        const part = amount / installments;
+        hintEl.innerHTML = `💳 Serão <b>${installments}x de R$ ${formatMoney(part)}</b> nos próximos meses`;
+        hintEl.classList.remove('hidden');
+      } else {
+        hintEl.classList.add('hidden');
       }
     }
 
@@ -1406,6 +1608,8 @@
       const submitBtn = document.getElementById('txSubmitBtn');
       const typeInput = document.getElementById('txType');
       const paySection = document.getElementById('txPaymentMethodSection');
+      const catWrapper = document.getElementById('txCategoryWrapper');
+      const dateWrapper = document.getElementById('txDateWrapper');
 
       typeInput.value = type;
 
@@ -1415,16 +1619,27 @@
         iconBox.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i>';
         submitBtn.className = 'flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-md';
         if (paySection) paySection.classList.add('hidden');
+        if (catWrapper) catWrapper.classList.add('hidden');
+        if (dateWrapper) dateWrapper.className = 'col-span-2';
+        document.getElementById('txDescLabel').innerText = 'Identificação da Receita';
+        document.getElementById('txDescription').placeholder = 'Ex: Salário mensal, Adiantamento, Bico...';
       } else {
         header.className = 'p-4 bg-rose-600 text-white flex items-center justify-between shrink-0';
         title.innerText = 'Registrar Novo Gasto';
         iconBox.innerHTML = '<i data-lucide="minus-circle" class="w-4 h-4"></i>';
         submitBtn.className = 'flex-1 py-2.5 rounded-xl bg-rose-600 text-white font-bold text-xs shadow-md';
         if (paySection) paySection.classList.remove('hidden');
+        if (catWrapper) catWrapper.classList.remove('hidden');
+        if (dateWrapper) dateWrapper.className = '';
+        document.getElementById('txDescLabel').innerText = 'O que foi comprado?';
+        document.getElementById('txDescription').placeholder = 'Ex: Mercado, Padaria, Farmácia...';
       }
 
       document.getElementById('txAmount').value = '';
       document.getElementById('txDescription').value = '';
+      const installSelect = document.getElementById('txInstallments');
+      if (installSelect) installSelect.value = '1';
+      updateInstallmentHint();
       setPaymentType('pix');
 
       const deviceProfile = localStorage.getItem('casal_meu_perfil') || 'p1';
@@ -1441,9 +1656,12 @@
       const amount = parseFloat(document.getElementById('txAmount').value) || 0;
       const description = document.getElementById('txDescription').value.trim();
       const person = document.querySelector('input[name="txPerson"]:checked')?.value || 'p1';
-      const category = document.getElementById('txCategory').value;
+      const category = type === 'income' ? 'Receita' : (document.getElementById('txCategory').value || 'Outros');
       const date = document.getElementById('txDate').value;
       const cardId = document.getElementById('txCardId').value;
+      const installments = (type === 'expense' && activePaymentType === 'card') 
+        ? parseInt(document.getElementById('txInstallments')?.value || '1', 10) 
+        : 1;
 
       if (amount <= 0 || !description) return;
 
@@ -1452,19 +1670,47 @@
         return;
       }
 
-      const newTx = {
-        id: 'tx_' + Date.now(),
-        type,
-        amount,
-        description,
-        person,
-        category,
-        date,
-        method: type === 'income' ? 'pix' : activePaymentType,
-        cardId: (type === 'expense' && activePaymentType === 'card') ? cardId : null
-      };
+      if (type === 'expense' && activePaymentType === 'card' && installments > 1) {
+        // Compra parcelada: gera 1 lançamento para cada mês subsequente
+        const partAmount = Number((amount / installments).toFixed(2));
+        const parentId = 'purchase_' + Date.now();
+        const baseDate = new Date(date + 'T12:00:00');
 
-      appState.transactions.unshift(newTx);
+        for (let i = 0; i < installments; i++) {
+          const installmentDate = new Date(baseDate);
+          installmentDate.setMonth(baseDate.getMonth() + i);
+          const installmentDateStr = installmentDate.toISOString().split('T')[0];
+
+          appState.transactions.unshift({
+            id: `tx_${Date.now()}_${i}`,
+            parentId: parentId,
+            type: 'expense',
+            amount: partAmount,
+            description: `${description} (${i + 1}/${installments})`,
+            person: person,
+            category: category,
+            date: installmentDateStr,
+            method: 'card',
+            cardId: cardId,
+            installment: { current: i + 1, total: installments }
+          });
+        }
+      } else {
+        // À vista (Pix, Dinheiro ou Cartão 1x)
+        appState.transactions.unshift({
+          id: 'tx_' + Date.now(),
+          type: type,
+          amount: amount,
+          description: description,
+          person: person,
+          category: category,
+          date: date,
+          method: type === 'income' ? 'pix' : activePaymentType,
+          cardId: (type === 'expense' && activePaymentType === 'card') ? cardId : null,
+          installment: null
+        });
+      }
+
       saveState();
       closeModal('transactionModal');
       renderAll();
